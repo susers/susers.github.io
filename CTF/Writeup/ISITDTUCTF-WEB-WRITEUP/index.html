@@ -1,0 +1,755 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Writeup,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/s.ico?v=5.0.1">
+
+
+
+
+
+
+<meta name="description" content="首发于安全客 https://www.anquanke.com/post/id/153258  28号的时候师傅们都在打real world ctf，看了一下real world ctf实在玩不动。。。于是就去玩了玩这个越南的ctf比赛的web部分的题目。整体而言这个比赛的web部分的题目偏中等难度，还是比较适合新手的一次练手，部分题目也有一定的新意。这里给出部分题目的writeup。   IZ">
+<meta name="keywords" content="Writeup">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ISITDTUCTF web writeup">
+<meta property="og:url" content="http://yoursite.com/CTF/Writeup/ISITDTUCTF-WEB-WRITEUP/index.html">
+<meta property="og:site_name" content="SUS">
+<meta property="og:description" content="首发于安全客 https://www.anquanke.com/post/id/153258  28号的时候师傅们都在打real world ctf，看了一下real world ctf实在玩不动。。。于是就去玩了玩这个越南的ctf比赛的web部分的题目。整体而言这个比赛的web部分的题目偏中等难度，还是比较适合新手的一次练手，部分题目也有一定的新意。这里给出部分题目的writeup。   IZ">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t0156be5a0c256cebbc.png">
+<meta property="og:image" content="https://p3.ssl.qhimg.com/t013058e72ceef9e2ac.png">
+<meta property="og:image" content="https://p2.ssl.qhimg.com/t015c3a4af5175d3803.png">
+<meta property="og:image" content="https://p4.ssl.qhimg.com/t015505823f6c7c57ab.png">
+<meta property="og:image" content="https://p3.ssl.qhimg.com/t011d0763eeb24df413.png">
+<meta property="og:image" content="https://p5.ssl.qhimg.com/t019c4894b8888e1928.png">
+<meta property="og:updated_time" content="2019-02-02T00:38:08.495Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ISITDTUCTF web writeup">
+<meta name="twitter:description" content="首发于安全客 https://www.anquanke.com/post/id/153258  28号的时候师傅们都在打real world ctf，看了一下real world ctf实在玩不动。。。于是就去玩了玩这个越南的ctf比赛的web部分的题目。整体而言这个比赛的web部分的题目偏中等难度，还是比较适合新手的一次练手，部分题目也有一定的新意。这里给出部分题目的writeup。   IZ">
+<meta name="twitter:image" content="https://p0.ssl.qhimg.com/t0156be5a0c256cebbc.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/CTF/Writeup/ISITDTUCTF-WEB-WRITEUP/">
+
+  <title> ISITDTUCTF web writeup | SUS </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?e877d3fb346f9b6606dfc92ef67f044f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+    
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader" style="background-image: url('/images/home.jpg');">
+      <div class="header-inner"><a class="site-home" href="/">SUS</a>
+
+<div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <div href="/" class="brand">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SUS</span>
+      <span class="logo-line-after"><i></i></span>
+    </div>
+  </div>
+  <p class="site-subtitle">秉承古典黑客精神，引领一流网络安全体验</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-notice">
+          <a href="/tags/Notice/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-bell"></i> <br>
+            
+            Notice
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-course">
+          <a href="/course" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            Course
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-oj">
+          <a href="/CtfPlantform" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-flag"></i> <br>
+            
+            OJ
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-wiki">
+          <a href="/wiki" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-wikipedia-w"></i> <br>
+            
+            CTF-wiki
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+      <div class="header-post"> 
+  <div class="post-header">
+      <div class="tags">
+      
+        <a href="/tags/Writeup/" rel="tag" title="Writeup">Writeup</a>
+      
+      </div>
+      <h1>ISITDTUCTF web writeup</h1>
+      <h2 class="subtitle"></h2>
+      <div class="post-time">
+        <span class="post-meta-item-text">Posted on </span>
+        <time itemprop="dateCreated" datetime="2018-08-02T15:56:42+08:00" content="2018-08-02" title="2018-08-02 15:56:42">
+          2018-08-02
+        </time>
+      </div>
+  </div>
+ </div>
+    </header>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                ISITDTUCTF web writeup
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">Posted on</span>
+            <time itemprop="dateCreated" datetime="2018-08-02T15:56:42+08:00" content="2018-08-02">
+              2018-08-02
+            </time>
+          </span>
+
+          
+            <span class="post-category">
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/CTF/" itemprop="url" rel="index">
+                    <span itemprop="name">CTF</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/CTF/Writeup/" itemprop="url" rel="index">
+                    <span itemprop="name">Writeup</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          <!-- 
+            
+           -->
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>首发于安全客 <a href="https://www.anquanke.com/post/id/153258" target="_blank" rel="noopener">https://www.anquanke.com/post/id/153258</a></p>
+</blockquote>
+<p></p><p>28号的时候师傅们都在打real world ctf，看了一下real world ctf实在玩不动。。。于是就去玩了玩这个越南的ctf比赛的web部分的题目。整体而言这个比赛的web部分的题目偏中等难度，还是比较适合新手的一次练手，部分题目也有一定的新意。这里给出部分题目的writeup。</p><p></p>
+<p></p><p> </p><p></p>
+<p></p><h2 name="h2-0" id="h2-0">IZ</h2><p></p>
+<p><blockquote><p><a href="http://35.185.178.212/" target="_blank" rel="noopener">题目地址</a></p></blockquote></p>
+<p></p><p>打开题目可以获得题目源码：</p><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> “config.php”;</span><br><span class="line">$number1 = rand(<span class="number">1</span>,<span class="number">100000000000000</span>);</span><br><span class="line">$number2 = rand(<span class="number">1</span>,<span class="number">100000000000</span>);</span><br><span class="line">$number3 = rand(<span class="number">1</span>,<span class="number">100000000</span>);</span><br><span class="line">$url = urldecode($_SERVER[‘REQUEST_URI’]);</span><br><span class="line">$url = parse_url($url, PHP_URL_QUERY);</span><br><span class="line"><span class="keyword">if</span> (preg_match(“/_/i”, $url))</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">die</span>(“…”);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (preg_match(“/<span class="number">0</span>/i”, $url))</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">die</span>(“…”);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (preg_match(“/w+/i”, $url))</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">die</span>(“…”);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($GET[‘‘]) &amp;&amp; !<span class="keyword">empty</span>($GET[‘‘]))</span><br><span class="line">&#123;</span><br><span class="line">$control = $GET[‘‘];</span><br><span class="line"><span class="keyword">if</span>(!in_array($control, <span class="keyword">array</span>(<span class="number">0</span>,$number1)))</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">die</span>(“fail1”);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(!in_array($control, <span class="keyword">array</span>(<span class="number">0</span>,$number2)))</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">die</span>(“fail2”);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(!in_array($control, <span class="keyword">array</span>(<span class="number">0</span>,$number3)))</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">die</span>(“fail3”);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> $flag;</span><br><span class="line">&#125;</span><br><span class="line">show_source(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><p></p>
+<p></p><p>可以看到题目的逻辑主要是获取query_string后用parse_url处理，处理后的$url再进行过滤，可以看到这里的过滤非常严所以想要绕过过滤还是有一定难度的。<br><br>然而parse_url函数存在一个bug:<br><br>当url的格式为<code>http:/localhost///x.php?key=value</code>的方式可以使其返回<code>False</code><br><br>这样就可以成功绕过之后的三次preg_match的过滤.<br><br>绕过三次preg_match的过滤后程序又进行了三次in_array()判断，而三次in_array()的数组都存在0这样一个元素。而由php弱类型的特性，in_array()在判断时使用的是弱比较，当比较一个字符串和一个数字时默认会尝试把字符串转换为数字，如果字符串的第一个字符不是数字的话则该字符串会被转化成0.具体的转化规则可以参考<a href="http://php.net/manual/zh/language.operators.comparison.php" target="_blank" rel="noopener">php.net中的描述</a>。<br><br>因此最终的payload为：</p><p></p>
+<p><pre><code>///?_=a<br></code></pre></p>
+<p></p><p>访问即可获取flag。</p><p></p>
+<p></p><p> </p><p></p>
+<p></p><h2 name="h2-1" id="h2-1">Friss</h2><p></p>
+<p><blockquote><p><a href="http://35.190.142.60/" target="_blank" rel="noopener">题目地址</a></p></blockquote></p>
+<p></p><p>题目进去后是一个表单页面：<br><img class="aligncenter" title="curl1" alt="curl1" src="https://p0.ssl.qhimg.com/t0156be5a0c256cebbc.png"></p><p></p>
+<p></p><p>可以判断这个题目应该是要考ssrf相关的东西。于是首先测试file协议看能不能读到文件，输入<code>file:///etc/passwd</code>，结果题目返回：</p><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">include_once</span> “config.php”;</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_POST[‘url’])&amp;&amp;!<span class="keyword">empty</span>($_POST[‘url’]))</span><br><span class="line">&#123;</span><br><span class="line">    $url = $_POST[‘url’];</span><br><span class="line">    $content_url = getUrlContent($url);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">    $content_url = “”;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>($_GET[‘debug’]))</span><br><span class="line">&#123;</span><br><span class="line">    show_source(FILE);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><p></p>
+<p></p><p><code>file://localhost/var/www/html/config.php</code></p><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">$hosts = “localhost”;</span><br><span class="line">$dbusername = “ssrf_user”;</span><br><span class="line">$dbpasswd = “”;</span><br><span class="line">$dbname = “ssrf”;</span><br><span class="line">$dbport = <span class="number">3306</span>;</span><br><span class="line"></span><br><span class="line">$conn = mysqli_connect($hosts,$dbusername,$dbpasswd,$dbname,$dbport);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">initdb</span><span class="params">($conn)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">$dbinit = “create table <span class="keyword">if</span> not exists flag(secret varchar(<span class="number">100</span>));”;</span><br><span class="line"><span class="keyword">if</span>(mysqli_query($conn,$dbinit)) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">safe</span><span class="params">($url)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">$tmpurl = parse_url($url, PHP_URL_HOST);</span><br><span class="line"><span class="keyword">if</span>($tmpurl != “localhost” <span class="keyword">and</span> $tmpurl != “<span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>”)</span><br><span class="line">&#123;</span><br><span class="line">var_dump($tmpurl);</span><br><span class="line"><span class="keyword">die</span>(“&lt;h1&gt;Only access to localhost&lt;/h1&gt;”);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> $url;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getUrlContent</span><span class="params">($url)</span></span>&#123;</span><br><span class="line">$url = safe($url);</span><br><span class="line">$url = escapeshellarg($url);</span><br><span class="line">$pl = “curl “.$url;</span><br><span class="line"><span class="keyword">echo</span> $pl;</span><br><span class="line">$content = shell_exec($pl);</span><br><span class="line"><span class="keyword">return</span> $content;</span><br><span class="line">&#125;</span><br><span class="line">initdb($conn);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><p></p>
+<p></p><p>可以看到在config.php中告诉我们flag在数据库中且给出了我们一个空密码的mysql账户。因此我们便可以联想到34c3ctf中的一道<a href="http://www.freebuf.com/articles/web/159342.html" target="_blank" rel="noopener">使用gopher协议攻击mysql的题目</a>。</p><p></p>
+<p></p><p>这里gopher协议的主要功能是可以直接发起socket连接获取数据，而且由于mysql这里给出的密码是空密码，因此可以通过gopher发起sql请求来获取数据。<br><br>因此我们可以在本地用mysql搭建同样的环境，使用mysql客户端进行一次连接并获取执行读取flag的操作，用wireshark抓包后将抓取到的数据urlencode之后构造成符合gopher结构的payload即可获取到最后的flag。<br><br>首先我们创建相同的用户和同样的表结构：<img class="aligncenter" title="database" alt="database" src="https://p3.ssl.qhimg.com/t013058e72ceef9e2ac.png">然后给该用户此数据库的权限后使用该用户登入，获取该数据库内的flag信息，同时使用wireshark抓取lo上的包:<br><img class="aligncenter" alt src="https://p2.ssl.qhimg.com/t015c3a4af5175d3803.png"><br><img class="aligncenter" alt src="https://p4.ssl.qhimg.com/t015505823f6c7c57ab.png">wireshark中我们设置只显示客户端发送的数据包，以原始数据的形式显示<br><img class="aligncenter" alt src="https://p3.ssl.qhimg.com/t011d0763eeb24df413.png">将数据复制下来转换成urlencode的形式，构造gopher的链接为：</p><p></p>
+<p><pre><code>gopher://127.0.0.1:3306/_%A8%00%00%01%85%A6%FF%01%00%00%00%01%21%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00ssrf_user%00%00mysql_native_password%00f%03_os%05Linux%0C_client_name%08libmysql%04_pid%0519500%0F_client_version%065.7.22%09_platform%06x86_64%0Cprogram_name%05mysql%21%00%00%00%03select%20%40%40version_comment%20limit%201%12%00%00%00%03SELECT%20DATABASE%28%29%05%00%00%00%02ssrf%0F%00%00%00%03show%20databases%0C%00%00%00%03show%20tables%06%00%00%00%04flag%00%13%00%00%00%03select%20%2A%20from%20flag%01%00%00%00%01<br></code></pre></p>
+<p></p><p>最后可以在回显中获取flag<br><img class="aligncenter" alt src="https://p5.ssl.qhimg.com/t019c4894b8888e1928.png"></p><p></p>
+<p></p><p> </p><p></p>
+<p></p><h2 name="h2-2" id="h2-2">NNService</h2><p></p>
+<p><blockquote><p><a href="http://35.240.231.243/" target="_blank" rel="noopener">题目地址</a></p></blockquote></p>
+<p></p><p>先扫描查看是否存在源码泄露，发现存在robots.txt,提示存在源码bk/bk.zip,访问即可获取题目的源码。<br><br>这里我们主要分析题目最后导致getflag的两个点，在<code>index.controller.php</code>中,首先分析更改个人信息的位置上传头像的点:</p><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>($_FILES[‘avatar’] <span class="keyword">and</span> $_FILES[“avatar”][“error”] == <span class="number">0</span>)&#123;</span><br><span class="line">     <span class="keyword">if</span>((($_FILES[“avatar”][“type”] == “image/gif”) <span class="keyword">or</span> ($_FILES[“avatar”][“type”] == “image/jpeg”) <span class="keyword">or</span> ($_FILES[“avatar”][“type”] == “image/png”)) <span class="keyword">and</span> $_FILES[‘avatar’][‘size’]&lt;<span class="number">65535</span>)&#123;</span><br><span class="line">         $info=getimagesize($_FILES[‘avatar’][‘tmp_name’]);</span><br><span class="line">         <span class="keyword">if</span>(@is_array($info) <span class="keyword">and</span> array_key_exists(‘mime’,$info))&#123;</span><br><span class="line">             $type=explode(‘/‘,$info[‘mime’])[<span class="number">1</span>];</span><br><span class="line">             $filepath=<span class="keyword">$this</span>-&gt;user-&gt;getuser().”.”.$type;</span><br><span class="line">             $filename=”uploads/“.$filepath;</span><br><span class="line">             <span class="keyword">if</span>(is_uploaded_file($_FILES[‘avatar’][‘tmp_name’]))&#123;</span><br><span class="line">                 <span class="keyword">$this</span>-&gt;user-&gt;edit(“avatar”,<span class="keyword">array</span>($filepath,$type));</span><br><span class="line">                 <span class="keyword">if</span>(strpos($filepath,”..”) !== <span class="keyword">false</span>)</span><br><span class="line">                 &#123;</span><br><span class="line">                     <span class="keyword">die</span>(“Hacker, cut please!”);</span><br><span class="line">                 &#125;</span><br><span class="line">                 <span class="keyword">else</span> <span class="keyword">if</span>(move_uploaded_file($_FILES[‘avatar’][‘tmp_name’], $filename))&#123;</span><br><span class="line">                     quit_and_refresh(‘Upload success!’,’edit’);</span><br><span class="line">                 &#125;</span><br><span class="line">                 quit_and_refresh(‘Success!’,’edit’);</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">             <span class="comment">//TODO！report it！</span></span><br><span class="line">             quit(‘Only allow gif/jpeg/png files smaller than <span class="number">64</span>kb!’);</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">else</span>&#123;</span><br><span class="line">         <span class="comment">//TODO！report it！</span></span><br><span class="line">         quit(‘Only allow gif/jpeg/png files smaller than <span class="number">64</span>kb!’);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure><p></p>
+<p></p><p>分析代码流程，首先判断图片的mime类型，然后使用getimagesize获取图片的信息，之后从getimagesize获取到的图片信息中获取图片的后缀名，之后可以看到<code>$filepath=$this-&gt;user-&gt;getuser().”.”.$type;</code>，将用户名与图片名称拼接为图片上传路径，后调用<code>$this-&gt;user-&gt;edit(“avatar”,array($filepath,$type));</code>,跟到<code>user.class.php</code>文件中可以发现这一步的操作实质是将文件名写入了数据库中。之后<strong>使用强等于</strong>判断文件名中是否含有<code>..</code>，如果含有<code>..</code>则终止整个流程，否则将移动上传的图片到upload文件夹下，命名为<code>用户名.文件类型</code>;<br><br>然后我们再分析export处的源码：</p><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">export</span><span class="params">()</span></span>&#123;</span><br><span class="line">        $avatar=<span class="keyword">$this</span>-&gt;user-&gt;getavatar();</span><br><span class="line">        <span class="keyword">if</span>(substr($avatar,<span class="number">0</span>,<span class="number">5</span>)!==”data:”)&#123;</span><br><span class="line">            $fileavatar=substr(<span class="keyword">$this</span>-&gt;user-&gt;getavatar(),<span class="number">1</span>);</span><br><span class="line">            $avatar = “uploads/“.$fileavatar;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(file_exists($avatar) <span class="keyword">and</span> filesize($avatar)&amp;lt;<span class="number">65535</span> <span class="keyword">and</span> strpos($fileavatar,<span class="string">".."</span>)==<span class="keyword">false</span>)&#123;</span><br><span class="line">        $data=file_get_contents($avatar);</span><br><span class="line">        <span class="keyword">if</span>(!<span class="keyword">$this</span>-&amp;gt;user-&amp;gt;updateavatar($data)) quit(<span class="string">'Something error!'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="comment">//TODO！report it！</span></span><br><span class="line">        $out=<span class="string">"Your avatar is invalid, so we reported it"</span>.<span class="string">"&amp;lt;/p&amp;gt;"</span>;</span><br><span class="line">        <span class="keyword">include</span>(<span class="string">"templates/error.html"</span>);</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">"&amp;lt;br&amp;gt;"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">$article=<span class="keyword">$this</span>-&amp;gt;user-&amp;gt;getarticle();</span><br><span class="line">$data=<span class="string">""</span>;</span><br><span class="line"><span class="keyword">for</span>($i=<span class="number">0</span>;$i&amp;lt;count($article);$i++)&#123;</span><br><span class="line">    <span class="keyword">if</span>($i!=count($article)<span class="number">-1</span>)&#123;</span><br><span class="line">        $data.=$article[$i][<span class="number">2</span>].<span class="string">"rn"</span>;</span><br><span class="line">        $data.=$article[$i][<span class="number">3</span>].<span class="string">"n"</span>;</span><br><span class="line">        $data.=<span class="string">"----------n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        $data.=$article[$i][<span class="number">2</span>].<span class="string">"rn"</span>;</span><br><span class="line">        $data.=$article[$i][<span class="number">3</span>].<span class="string">"n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">$data.=<span class="string">"==========n"</span>;</span><br><span class="line">$avatar=<span class="keyword">$this</span>-&amp;gt;user-&amp;gt;getavatar(<span class="number">1</span>);</span><br><span class="line">$data.=base64_encode($avatar[<span class="number">1</span>]).<span class="string">"n"</span>;</span><br><span class="line">$data.=$avatar[<span class="number">3</span>];</span><br><span class="line">header(<span class="string">"Content-type: application/octet-stream"</span>);</span><br><span class="line">header(<span class="string">"Content-Transfer-Encoding: binary"</span>);</span><br><span class="line">header(<span class="string">"Accept-Ranges: bytes"</span>);</span><br><span class="line">header(<span class="string">"Content-Length: "</span>.strlen($data));</span><br><span class="line">header(<span class="string">"Content-Disposition: attachment; filename="</span><span class="string">".$this-&amp;gt;user-&amp;gt;getuser()."</span><span class="string">""</span>);</span><br><span class="line"><span class="keyword">echo</span> $data;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p></p>
+<p></p><p>可以看到export处的代码在进行导出时，首先调用<code>$avatar=$this-&gt;user-&gt;getavatar();</code>获取头像的信息，我们跟到<code>user.class.php</code>中可以发现这一步操作便是将我们之前写入数据库的文件名取出。然后这里的代码对文件进行判断，判断文件是否存在，文件大小是否小于65535，以及<strong>使用弱等于</strong>判断文件名中是否含有<code>..</code>。之后便获取文件内容并base64加密后拼接上之前的一些信息输出文件。<br><br>这里我们可以看到主要的漏洞点在于写入数据库的操作在判断文件名是否包含<code>..</code>之前，因此我们即使文件名中包含了<code>..</code>最后不合法的文件名也会被写入数据库。而在之后export处读取到文件名后使用的是弱等于判断：</p><p></p>
+<p><pre><code class="lang-php">strpos($fileavatar,”..”)==false<br></code></pre></p>
+<p></p><p>然而当我们构造类似<code>../flag.php</code>的字符串时，strpos返回<code>..</code>出现的位置0，而<code>0==false</code>成立。因此我们便可以成功实现目录穿越。<br><br>但是这里还有一点：我们的文件名的生成方式是<code>用户名.文件类型</code>,文件类型由getimagesize()函数获得，因此只能是图片文件的后缀名，那么怎样才能截断这个后缀名从而成功获取<code>flag.php</code>的源码？<br><br>这里我们查看之前下载到的源码中的sql文件:</p><br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="keyword">IF</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> <span class="keyword">users</span> (</span><br><span class="line">  <span class="keyword">id</span> <span class="built_in">int</span>(<span class="number">32</span>) primary <span class="keyword">key</span> auto_increment,</span><br><span class="line">  username <span class="built_in">varchar</span>(<span class="number">100</span>) <span class="keyword">UNIQUE</span> <span class="keyword">KEY</span>,</span><br><span class="line">  nickname <span class="built_in">varchar</span>(<span class="number">100</span>) <span class="keyword">UNIQUE</span> <span class="keyword">KEY</span>,</span><br><span class="line">  <span class="keyword">password</span> <span class="built_in">varchar</span>(<span class="number">32</span>),</span><br><span class="line">  email <span class="built_in">varchar</span>(<span class="number">100</span>) <span class="keyword">UNIQUE</span> <span class="keyword">KEY</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="keyword">IF</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> articles (</span><br><span class="line"><span class="keyword">id</span> <span class="built_in">int</span>(<span class="number">32</span>) primary <span class="keyword">key</span> auto_increment,</span><br><span class="line">user_id <span class="built_in">int</span>(<span class="number">32</span>),</span><br><span class="line">title <span class="built_in">varchar</span>(<span class="number">100</span>),</span><br><span class="line"><span class="keyword">content</span> <span class="built_in">varchar</span>(<span class="number">500</span>)</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="keyword">IF</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> avatar (</span><br><span class="line"><span class="keyword">id</span> <span class="built_in">int</span>(<span class="number">32</span>) primary <span class="keyword">key</span> auto_increment,</span><br><span class="line"><span class="keyword">data</span> <span class="built_in">blob</span>,</span><br><span class="line">user_id <span class="built_in">int</span>(<span class="number">32</span>) <span class="keyword">UNIQUE</span> <span class="keyword">KEY</span>,</span><br><span class="line">filepath <span class="built_in">varchar</span>(<span class="number">100</span>),</span><br><span class="line">photo_type <span class="built_in">varchar</span>(<span class="number">20</span>)</span><br><span class="line">);</span><br></pre></td></tr></table></figure><p></p>
+<p></p><p>可以看到这里的sql文件中限制了图片路径<code>filepath</code>字段的长度最多为100，用户名<code>username</code>的长度也最多为100。这里便可以联想到mysql的一个性质：<code>当mysql开启宽松模式时，在INSERT的时候，如果你插入的字符超出了MySQL的字段长度，MySQL会自动截断到最大长度然后插入，并不会出错。</code>，具体可以参考这篇文章：<a href="http://www.91ri.org/5963.html" target="_blank" rel="noopener">http://www.91ri.org/5963.html</a><br><br>因此我们如果注册长度为100的用户名，在将文件名写入数据库时，用户名之后拼接的后缀便会被截断从而无法进入数据库，因此便实现了我们对文件的控制。<br><br>最后解题的方法为：</p><p></p>
+<ul><br><li>注册用户名：<code>..//////////////////////////////////////////////////////////////////////////////////////////flag.php</code><br></li><br><li>edit处随意上传一张图片</li><br><li>export处导出数据，便可获得flag。</li><br></ul><br><p> </p><br><h2 name="h2-3" id="h2-3">总结</h2><br><p>这场比赛整体难度适中，比较适合新手用于提高自己的水平。此外比赛源码已经上传到<a href="https://github.com/susers/Writeups" target="_blank" rel="noopener">https://github.com/susers/Writeups</a>上，欢迎大家star与pull request！</p><br><p> </p><br><h2 name="h2-4" id="h2-4">参考资料</h2><br><ul><br><li><a href="http://php.net/manual/zh/language.operators.comparison.php" target="_blank" rel="noopener">http://php.net/manual/zh/language.operators.comparison.php</a></li><br><li><a href="http://www.freebuf.com/articles/web/159342.html" target="_blank" rel="noopener">http://www.freebuf.com/articles/web/159342.html</a></li><br><li><a href="https://ricterz.me/posts/%E5%88%A9%E7%94%A8%20gopher%20%E5%8D%8F%E8%AE%AE%E6%8B%93%E5%B1%95%E6%94%BB%E5%87%BB%E9%9D%A2" target="_blank" rel="noopener">https://ricterz.me/posts/%E5%88%A9%E7%94%A8%20gopher%20%E5%8D%8F%E8%AE%AE%E6%8B%93%E5%B1%95%E6%94%BB%E5%87%BB%E9%9D%A2</a></li><br><li><a href="http://www.91ri.org/5963.html" target="_blank" rel="noopener">http://www.91ri.org/5963.html</a></li><br></ul>
+
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Writeup/" <i class="fa fa-tag">Writeup</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/Notice/final/" rel="next" title="年终奖  (*^_^*)">
+                <i class="fa fa-chevron-left"></i> 年终奖  (*^_^*)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/Web/SSRF-DOCKER-RCE/" rel="prev" title="利用SSRF攻击docker remote api从而获取服务器root权限的探索">
+                利用SSRF攻击docker remote api从而获取服务器root权限的探索 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/logo.jpg" alt="Susers">
+          <p class="site-author-name" itemprop="name">Susers</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">Posts</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Categories</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/susers" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.bxsteam.xyz/" title="BXS Team" target="_blank">BXS Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://asuri.org/" title="Asuri Team" target="_blank">Asuri Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://github.com/SEU-ITE/" title="SEU-ITE" target="_blank">SEU-ITE</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#h2-0"><span class="nav-number">1.</span> <span class="nav-text">IZ</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#h2-1"><span class="nav-number">2.</span> <span class="nav-text">Friss</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#h2-2"><span class="nav-number">3.</span> <span class="nav-text">NNService</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#h2-3"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#h2-4"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy;  2017 - 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Susers</span>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+<span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>
+</span></div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">全站共31.0k字</span>
+</div>
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+    <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+    <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+    <script type="text/javascript">
+        (function() {
+            var id = '';
+            var owner = 'XuCcc';
+            var repo = 'XuCcc.github.io';
+            var clientId = 'f03b9d3d14222e890fdc';
+            var clientSecret = '676341561e48fad43015c644798175b16ee69fe0';
+
+            var gitment = new Gitment({
+                owner: owner,
+                repo: repo,
+                oauth: {
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                },
+            });
+            gitment.render('comments');
+        })();
+    </script>
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid="></script>
+      <!-- UY END -->
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,722 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Hexo, NexTD">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/s.ico?v=5.0.1">
+
+
+
+
+
+
+<meta name="description" content="微信公众号  场地极客密室逃脱体验中心位于XCTF网络安全实验室二楼；而XCTF网络安全实验室，也是XCTF攻防培训中心、极客活动中心，正是为省内广大的白帽爱好者、CTF比赛爱好者设立的一个专门的活动交流场所，会不定期组织开展线下交流和攻防培训。而依托于未来网络小镇的现代化设计，让XCTF极客密室逃脱体验中心更趋于科技感和趣味性，欢迎广大白帽前来挑战！ 关卡 第一部分为线上解题获取线索，线下寻宝">
+<meta property="og:type" content="article">
+<meta property="og:title" content="极客密室逃脱">
+<meta property="og:url" content="http://yoursite.com/uncategorized/geek2/index.html">
+<meta property="og:site_name" content="SUS">
+<meta property="og:description" content="微信公众号  场地极客密室逃脱体验中心位于XCTF网络安全实验室二楼；而XCTF网络安全实验室，也是XCTF攻防培训中心、极客活动中心，正是为省内广大的白帽爱好者、CTF比赛爱好者设立的一个专门的活动交流场所，会不定期组织开展线下交流和攻防培训。而依托于未来网络小镇的现代化设计，让XCTF极客密室逃脱体验中心更趋于科技感和趣味性，欢迎广大白帽前来挑战！ 关卡 第一部分为线上解题获取线索，线下寻宝">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/uncategorized/geek2/1.png">
+<meta property="og:image" content="http://yoursite.com/uncategorized/geek2/one.png">
+<meta property="og:image" content="http://yoursite.com/uncategorized/geek2/two.png">
+<meta property="og:image" content="http://yoursite.com/uncategorized/geek2/three.png">
+<meta property="og:image" content="http://yoursite.com/uncategorized/geek2/four.png">
+<meta property="og:image" content="http://yoursite.com/uncategorized/geek2/point.png">
+<meta property="og:updated_time" content="2019-02-02T00:38:08.082Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="极客密室逃脱">
+<meta name="twitter:description" content="微信公众号  场地极客密室逃脱体验中心位于XCTF网络安全实验室二楼；而XCTF网络安全实验室，也是XCTF攻防培训中心、极客活动中心，正是为省内广大的白帽爱好者、CTF比赛爱好者设立的一个专门的活动交流场所，会不定期组织开展线下交流和攻防培训。而依托于未来网络小镇的现代化设计，让XCTF极客密室逃脱体验中心更趋于科技感和趣味性，欢迎广大白帽前来挑战！ 关卡 第一部分为线上解题获取线索，线下寻宝">
+<meta name="twitter:image" content="http://yoursite.com/uncategorized/geek2/1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"right","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/uncategorized/geek2/">
+
+  <title> 极客密室逃脱 | SUS </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?e877d3fb346f9b6606dfc92ef67f044f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+    
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader" style="background-image: url('/images/home.jpg');">
+      <div class="header-inner"><a class="site-home" href="/">SUS</a>
+
+<div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <div href="/" class="brand">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">SUS</span>
+      <span class="logo-line-after"><i></i></span>
+    </div>
+  </div>
+  <p class="site-subtitle">秉承古典黑客精神，引领一流网络安全体验</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-notice">
+          <a href="/tags/Notice/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-bell"></i> <br>
+            
+            Notice
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-course">
+          <a href="/course" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            Course
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-oj">
+          <a href="/CtfPlantform" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-flag"></i> <br>
+            
+            OJ
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-wiki">
+          <a href="/wiki" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-wikipedia-w"></i> <br>
+            
+            CTF-wiki
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+      <div class="header-post"> 
+  <div class="post-header">
+      <div class="tags">
+      
+      </div>
+      <h1>极客密室逃脱</h1>
+      <h2 class="subtitle"></h2>
+      <div class="post-time">
+        <span class="post-meta-item-text">Posted on </span>
+        <time itemprop="dateCreated" datetime="2017-12-27T10:50:00+08:00" content="2017-12-27" title="2017-12-27 10:50:00">
+          2017-12-27
+        </time>
+      </div>
+  </div>
+ </div>
+    </header>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                极客密室逃脱
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">Posted on</span>
+            <time itemprop="dateCreated" datetime="2017-12-27T10:50:00+08:00" content="2017-12-27">
+              2017-12-27
+            </time>
+          </span>
+
+          
+
+          <!-- 
+            
+           -->
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <ul>
+<li><a href="https://mp.weixin.qq.com/s/55DYY-87cH70pVwuBFJ-Jw" target="_blank" rel="noopener">微信公众号</a></li>
+</ul>
+<h1 id="场地"><a href="#场地" class="headerlink" title="场地"></a>场地</h1><p>极客密室逃脱体验中心位于XCTF网络安全实验室二楼；而XCTF网络安全实验室，也是XCTF攻防培训中心、极客活动中心，正是为省内广大的白帽爱好者、CTF比赛爱好者设立的一个专门的活动交流场所，会不定期组织开展线下交流和攻防培训。而依托于未来网络小镇的现代化设计，让XCTF极客密室逃脱体验中心更趋于科技感和趣味性，欢迎广大白帽前来挑战！</p>
+<h1 id="关卡"><a href="#关卡" class="headerlink" title="关卡"></a>关卡</h1><ul>
+<li>第一部分为线上解题获取线索，线下寻宝部分：周六晚8：00，社团平台上放出了一些小题目，解出答案后才能于第二日去对应地点进行搜寻线索，而是否找到对应线索直接关系最终PK得分。</li>
+</ul>
+<p><img src="/uncategorized/geek2/1.png" alt="1"></p>
+<ul>
+<li><p>第二部分为极客密室现场闯关，按小组进行，每组3人，分别开始闯4个关卡,每一个关卡都巧妙地将虚拟与现实相结合、理论与实践再升华，集趣味性和网络安全知识于一体，能否闯关成功，全凭每个队员的智慧与勇气。</p>
+<ul>
+<li>图书室文档破解</li>
+<li>激光穿越</li>
+<li>WIFI破解内网渗透</li>
+<li>IC卡复制勇闯蜂巢迷宫</li>
+</ul>
+</li>
+<li><p>Mession one:图书室文档破解</p>
+</li>
+</ul>
+<p><img src="/uncategorized/geek2/one.png" alt="one"></p>
+<ul>
+<li>Mession two:激光穿越</li>
+</ul>
+<p><img src="/uncategorized/geek2/two.png" alt="two"></p>
+<ul>
+<li>Mession three:WIFI破解内网渗透</li>
+</ul>
+<p><img src="/uncategorized/geek2/three.png" alt="three"></p>
+<ul>
+<li>Mession four:IC卡复制勇闯蜂巢迷宫</li>
+</ul>
+<p><img src="/uncategorized/geek2/four.png" alt="four"></p>
+<h1 id="总成绩"><a href="#总成绩" class="headerlink" title="总成绩"></a>总成绩</h1><p>闯关用时最短的小组仅耗时30min25s，得分2100；而最久的一组耗时58min16s，得分2000。因为有线索未拿到而遗憾失分，不过有得有失才会更加让人意犹未尽，大呼过瘾嘛！大家的表现都十分出色，团队协作、技能抢时、脑洞加分……小白帽们，不服来战，下一个来体验的会不会是你呢？</p>
+<p><img src="/uncategorized/geek2/point.png" alt="point"></p>
+<h1 id="Thanks"><a href="#Thanks" class="headerlink" title="Thanks"></a>Thanks</h1><ul>
+<li><a href="http://www.cyberpeace.cn/" target="_blank" rel="noopener">赛宁网安</a></li>
+</ul>
+
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/Notice/re/" rel="next" title="Re&&Mobile 预告">
+                <i class="fa fa-chevron-left"></i> Re&&Mobile 预告
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/Notice/final/" rel="prev" title="年终奖  (*^_^*)">
+                年终奖  (*^_^*) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/logo.jpg" alt="Susers">
+          <p class="site-author-name" itemprop="name">Susers</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">Posts</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Categories</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">Tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/susers" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              Links
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.bxsteam.xyz/" title="BXS Team" target="_blank">BXS Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://asuri.org/" title="Asuri Team" target="_blank">Asuri Team</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="https://github.com/SEU-ITE/" title="SEU-ITE" target="_blank">SEU-ITE</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#场地"><span class="nav-number">1.</span> <span class="nav-text">场地</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#关卡"><span class="nav-number">2.</span> <span class="nav-text">关卡</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总成绩"><span class="nav-number">3.</span> <span class="nav-text">总成绩</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Thanks"><span class="nav-number">4.</span> <span class="nav-text">Thanks</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy;  2017 - 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Susers</span>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+<span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>
+</span></div>
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">全站共31.0k字</span>
+</div>
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+    <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+    <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+    <script type="text/javascript">
+        (function() {
+            var id = '';
+            var owner = 'XuCcc';
+            var repo = 'XuCcc.github.io';
+            var clientId = 'f03b9d3d14222e890fdc';
+            var clientSecret = '676341561e48fad43015c644798175b16ee69fe0';
+
+            var gitment = new Gitment({
+                owner: owner,
+                repo: repo,
+                oauth: {
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                },
+            });
+            gitment.render('comments');
+        })();
+    </script>
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid="></script>
+      <!-- UY END -->
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+<script type="text/javascript" async src="//push.zhanzhang.baidu.com/push.js">
+</script>
+
+
+</body>
+</html>
